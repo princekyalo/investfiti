@@ -96,6 +96,55 @@
     .footer a:hover {
       text-decoration: underline;
     }
+
+
+
+
+
+
+    /* Add these media queries at the end of your style section */
+
+/* For tablets and smaller screens */
+@media (max-width: 600px) {
+  .container {
+    width: 90%; /* Make container width responsive */
+    padding: 25px; /* Reduce padding */
+    margin: 15px; /* Add margin for small screens */
+  }
+  
+  .row {
+    flex-direction: column; /* Stack first/last name vertically */
+    gap: 15px; /* Maintain spacing */
+  }
+  
+  input, button {
+    font-size: 16px; /* Prevent zoom on focus in iOS */
+  }
+}
+
+/* For very small phones (under 400px) */
+@media (max-width: 400px) {
+  .container {
+    padding: 20px; /* Even smaller padding */
+  }
+  
+  h2 {
+    font-size: 24px; /* Slightly smaller heading */
+    margin-bottom: 20px;
+  }
+  
+  .footer {
+    font-size: 13px; /* Smaller footer text */
+  }
+}
+
+/* Optional: Make inputs more tappable */
+input, button {
+  min-height: 48px; /* Minimum touch target size */
+}
+
+
+
   </style>
 </head>
 
