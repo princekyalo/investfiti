@@ -215,7 +215,7 @@ input, button {
           createdAt: serverTimestamp()
         });
 
-        showSuccess("Account created! Redirecting…");
+        showSuccess("Account created! Redirecting…. Click <a href='index.html'>here</a> if you are not redirected in the next 10 seconds");
         setTimeout(() => { window.location.href = "index.html"; }, 1500);
 
       } catch (err) {
