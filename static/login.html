@@ -2,159 +2,235 @@
 <html lang="en">
 
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      width: 380px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
 
-<title>Login</title>
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+    }
 
-<style>
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
 
-body{
-font-family:Arial, Helvetica, sans-serif;
-background:linear-gradient(135deg,#0f172a,#1e293b);
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
-margin:0;
-}
+    input {
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
 
-.container{
-background:white;
-padding:40px;
-border-radius:12px;
-width:380px;
-box-shadow:0 10px 30px rgba(0,0,0,0.2);
-}
+    input:invalid {
+      border-color: #ef4444;
+    }
 
-h2{
-text-align:center;
-margin-bottom:25px;
-}
+    input:valid {
+      border-color: #22c55e;
+    }
 
-form{
-display:flex;
-flex-direction:column;
-gap:15px;
-}
+    button {
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
 
-input{
-padding:12px;
-border-radius:8px;
-border:1px solid #ccc;
-font-size:14px;
-}
+    button:hover {
+      background: #1e40af;
+    }
 
-input:invalid{
-border-color:#ef4444;
-}
+    button:disabled {
+      background: #93c5fd;
+      cursor: not-allowed;
+    }
 
-input:valid{
-border-color:#22c55e;
-}
+    .error {
+      color: red;
+      font-size: 14px;
+      text-align: center;
+    }
 
-button{
-padding:12px;
-border:none;
-border-radius:8px;
-background:#2563eb;
-color:white;
-font-size:16px;
-cursor:pointer;
-transition:0.3s;
-}
+    .success {
+      color: #16a34a;
+      font-size: 14px;
+      text-align: center;
+    }
 
-button:hover{
-background:#1e40af;
-}
+    .footer {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 14px;
+    }
 
-.error{
-color:red;
-font-size:14px;
-text-align:center;
-}
+    .footer a {
+      color: #2563eb;
+      text-decoration: none;
+    }
 
-.footer{
-margin-top:10px;
-text-align:center;
-font-size:14px;
-}
-
-.footer a{
-color:#2563eb;
-text-decoration:none;
-}
-
-.footer a:hover{
-text-decoration:underline;
-}
-
-</style>
-
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="container">
+  <div class="container">
+    <h2>Login</h2>
 
-<h2>Login</h2>
+    <div id="formError" class="error"></div>
+    <div id="formSuccess" class="success"></div>
 
-<div id="formError" class="error"></div>
+    <form id="loginForm">
+      <input
+        id="loginInput"
+        type="text"
+        placeholder="Email / Payment Address / Phone Number"
+        required
+      />
 
-<form id="loginForm">
+      <input
+        id="password"
+        type="password"
+        placeholder="Password"
+        required
+        minlength="6"
+      />
 
-<input
-id="loginInput"
-type="text"
-placeholder="Email / Payment Address / Phone Number"
-required
-/>
+      <button type="submit" id="submitBtn">Login</button>
+    </form>
 
-<input
-id="password"
-type="password"
-placeholder="Password"
-required
-minlength="6"
-/>
+    <div class="footer">
+      Don't have an account? <a href="signup.html">Sign Up</a>
+    </div>
+  </div>
 
-<button type="submit">Login</button>
+  <!-- Single module script: initializes Firebase AND handles login -->
+  <script type="module">
+    import { initializeApp }                          from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAnalytics }                           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+    import { getAuth, signInWithEmailAndPassword }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-</form>
+    // ── Firebase config ──────────────────────────────────────────────
+    const firebaseConfig = {
+      apiKey:            "AIzaSyBrBvOZlmRWe7dawl-RKYxDtPNvRvagxzo",
+      authDomain:        "trading-agent-8dd25.firebaseapp.com",
+      projectId:         "trading-agent-8dd25",
+      storageBucket:     "trading-agent-8dd25.firebasestorage.app",
+      messagingSenderId: "779879009062",
+      appId:             "1:779879009062:web:60836b1d9c4ee37b6c0fe7",
+      measurementId:     "G-F3B9GM6WYN"
+    };
 
-<div class="footer">
-Don't have an account? <a href="signup.html">Sign Up</a>
-</div>
+    // ── Initialize services ──────────────────────────────────────────
+    const app       = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth      = getAuth(app);
+    const db        = getFirestore(app);
 
-</div>
+    // ── DOM refs ─────────────────────────────────────────────────────
+    const form       = document.getElementById("loginForm");
+    const errorBox   = document.getElementById("formError");
+    const successBox = document.getElementById("formSuccess");
+    const submitBtn  = document.getElementById("submitBtn");
 
-<script type="module" src="scripts/firebase_login.js"></script>
+    function showError(msg)   { errorBox.textContent = msg; successBox.textContent = ""; }
+    function showSuccess(msg) { successBox.textContent = msg; errorBox.textContent = ""; }
+    function clearMessages()  { errorBox.textContent = ""; successBox.textContent = ""; }
 
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+    // ── Resolve email from phone/payment address via Firestore ───────
+    async function resolveEmail(input) {
+      // If it looks like an email, use it directly
+      if (input.includes("@")) return input;
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyBrBvOZlmRWe7dawl-RKYxDtPNvRvagxzo",
-    authDomain: "trading-agent-8dd25.firebaseapp.com",
-    projectId: "trading-agent-8dd25",
-    storageBucket: "trading-agent-8dd25.firebasestorage.app",
-    messagingSenderId: "779879009062",
-    appId: "1:779879009062:web:60836b1d9c4ee37b6c0fe7",
-    measurementId: "G-F3B9GM6WYN"
-  };
+      // Otherwise query Firestore users collection for matching phone
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("phone", "==", input));
+      const snapshot = await getDocs(q);
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
+      if (!snapshot.empty) return snapshot.docs[0].data().email;
+
+      // Try payment address field as fallback
+      const q2 = query(usersRef, where("paymentAddress", "==", input));
+      const snapshot2 = await getDocs(q2);
+
+      if (!snapshot2.empty) return snapshot2.docs[0].data().email;
+
+      return null; // No match found
+    }
+
+    // ── Login handler ────────────────────────────────────────────────
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearMessages();
+
+      const rawInput = document.getElementById("loginInput").value.trim();
+      const password = document.getElementById("password").value;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Logging in…";
+
+      try {
+        // Resolve to email if phone/payment address was entered
+        const email = await resolveEmail(rawInput);
+
+        if (!email) {
+          showError("No account found for that email, phone, or payment address.");
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Login";
+          return;
+        }
+
+        // Sign in with resolved email
+        await signInWithEmailAndPassword(auth, email, password);
+
+        showSuccess("Login successful! Redirecting…");
+
+        // Redirect after short delay (update path as needed)
+        setTimeout(() => { window.location.href = "dashboard.html"; }, 1500);
+
+      } catch (err) {
+        const messages = {
+          "auth/invalid-credential":     "Incorrect email or password.",
+          "auth/user-not-found":         "No account found with this email.",
+          "auth/wrong-password":         "Incorrect password. Please try again.",
+          "auth/too-many-requests":      "Too many attempts. Please try again later.",
+          "auth/network-request-failed": "Network error. Please check your connection.",
+          "auth/invalid-email":          "Please enter a valid email address."
+        };
+        showError(messages[err.code] || `Login failed: ${err.message}`);
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Login";
+      }
+    });
+  </script>
 
 </body>
-
 </html>

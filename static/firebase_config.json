@@ -1,8 +1,10 @@
+
 {
-  "apiKey": "YOUR_API_KEY",
-  "authDomain": "YOUR_AUTH_DOMAIN",
-  "projectId": "YOUR_PROJECT_ID",
-  "storageBucket": "YOUR_STORAGE_BUCKET",
-  "messagingSenderId": "YOUR_MESSAGING_SENDER_ID",
-  "appId": "YOUR_APP_ID"
+  "apiKey": "AIzaSyBrBvOZlmRWe7dawl-RKYxDtPNvRvagxzo",
+  "authDomain": "trading-agent-8dd25.firebaseapp.com",
+  "projectId": "trading-agent-8dd25",
+  "storageBucket": "trading-agent-8dd25.firebasestorage.app",
+  "messagingSenderId": "779879009062",
+  "appId": "1:779879009062:web:60836b1d9c4ee37b6c0fe7",
+  "measurementId": "G-F3B9GM6WYN"
 }

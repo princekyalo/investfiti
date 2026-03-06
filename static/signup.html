@@ -2,187 +2,186 @@
 <html lang="en">
 
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Sign Up</title>
-
-<style>
-
-body{
-font-family:Arial, Helvetica, sans-serif;
-background:linear-gradient(135deg,#0f172a,#1e293b);
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
-margin:0;
-}
-
-.container{
-background:white;
-padding:40px;
-border-radius:12px;
-width:420px;
-box-shadow:0 10px 30px rgba(0,0,0,0.2);
-}
-
-h2{
-text-align:center;
-margin-bottom:25px;
-}
-
-form{
-display:flex;
-flex-direction:column;
-gap:15px;
-}
-
-.row{
-display:flex;
-gap:10px;
-}
-
-.row input{
-flex:1;
-}
-
-input{
-padding:12px;
-border-radius:8px;
-border:1px solid #ccc;
-font-size:14px;
-}
-
-input:invalid{
-border-color:#ff4d4d;
-}
-
-input:valid{
-border-color:#22c55e;
-}
-
-button{
-padding:12px;
-border:none;
-border-radius:8px;
-background:#2563eb;
-color:white;
-font-size:16px;
-cursor:pointer;
-transition:0.3s;
-}
-
-button:hover{
-background:#1e40af;
-}
-
-.error{
-color:red;
-font-size:14px;
-text-align:center;
-}
-
-</style>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      width: 420px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    h2 { text-align: center; margin-bottom: 25px; }
+    form { display: flex; flex-direction: column; gap: 15px; }
+    .row { display: flex; gap: 10px; }
+    .row input { flex: 1; }
+    input {
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus { border-color: #2563eb; }
+    button {
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover:not(:disabled) { background: #1e40af; }
+    button:disabled { background: #93c5fd; cursor: not-allowed; }
+    .error {
+      color: #dc2626; font-size: 13px; text-align: center;
+      padding: 8px; background: #fef2f2; border-radius: 6px; display: none;
+    }
+    .success {
+      color: #16a34a; font-size: 13px; text-align: center;
+      padding: 8px; background: #f0fdf4; border-radius: 6px; display: none;
+    }
+    .error.visible, .success.visible { display: block; }
+    .footer { margin-top: 15px; text-align: center; font-size: 14px; color: #555; }
+    .footer a { color: #2563eb; text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+  </style>
 </head>
 
 <body>
+  <div class="container">
+    <h2>Create Account</h2>
+    <div id="formError" class="error"></div>
+    <div id="formSuccess" class="success"></div>
 
-<div class="container">
+    <form id="signupForm" novalidate>
+      <div class="row">
+        <input id="firstName" type="text"     placeholder="First Name" />
+        <input id="lastName"  type="text"     placeholder="Last Name" />
+      </div>
+      <input id="email"           type="email"    placeholder="Email Address" />
+      <input id="phone"           type="tel"      placeholder="Phone Number" />
+      <input id="password"        type="password" placeholder="Password (min 6 chars)" />
+      <input id="confirmPassword" type="password" placeholder="Confirm Password" />
+      <button type="submit" id="submitBtn">Sign Up</button>
+    </form>
 
-<h2>Create Account</h2>
+    <div class="footer">
+      Already have an account? <a href="login.html">Login</a>
+    </div>
+  </div>
 
-<div id="formError" class="error"></div>
+  <script type="module">
+    import { initializeApp }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAnalytics }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+    import { getAuth, createUserWithEmailAndPassword, updateProfile }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, serverTimestamp }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-<form id="signupForm">
+    const firebaseConfig = {
+      apiKey:            "AIzaSyBrBvOZlmRWe7dawl-RKYxDtPNvRvagxzo",
+      authDomain:        "trading-agent-8dd25.firebaseapp.com",
+      projectId:         "trading-agent-8dd25",
+      storageBucket:     "trading-agent-8dd25.firebasestorage.app",
+      messagingSenderId: "779879009062",
+      appId:             "1:779879009062:web:60836b1d9c4ee37b6c0fe7",
+      measurementId:     "G-F3B9GM6WYN"
+    };
 
-<div class="row">
+    let app, auth, db;
+    try {
+      app  = initializeApp(firebaseConfig);
+      auth = getAuth(app);
+      db   = getFirestore(app);
+      getAnalytics(app);
+    } catch (initErr) {
+      console.error("Firebase init error:", initErr);
+    }
 
-<input
-id="firstName"
-type="text"
-placeholder="First Name"
-required
-pattern="[A-Za-z]{2,}"
-title="Enter a valid first name"
-/>
+    const form       = document.getElementById("signupForm");
+    const errorBox   = document.getElementById("formError");
+    const successBox = document.getElementById("formSuccess");
+    const submitBtn  = document.getElementById("submitBtn");
 
-<input
-id="lastName"
-type="text"
-placeholder="Last Name"
-required
-pattern="[A-Za-z]{2,}"
-title="Enter a valid last name"
-/>
+    const showError   = msg => { errorBox.textContent = msg;   errorBox.classList.add("visible");   successBox.classList.remove("visible"); };
+    const showSuccess = msg => { successBox.textContent = msg; successBox.classList.add("visible"); errorBox.classList.remove("visible"); };
+    const clearMsgs   = ()  => { errorBox.classList.remove("visible"); successBox.classList.remove("visible"); };
+    const setLoading  = on  => { submitBtn.disabled = on; submitBtn.textContent = on ? "Creating account…" : "Sign Up"; };
 
-</div>
+    function validate(fn, ln, em, ph, pw, cpw) {
+      if (!fn || fn.length < 2)      return "First name must be at least 2 letters.";
+      if (!ln || ln.length < 2)      return "Last name must be at least 2 letters.";
+      if (!em || !em.includes("@"))  return "Please enter a valid email address.";
+      if (!ph || ph.length < 7)      return "Please enter a valid phone number.";
+      if (!pw || pw.length < 6)      return "Password must be at least 6 characters.";
+      if (pw !== cpw)                return "Passwords do not match.";
+      return null;
+    }
 
-<input
-id="email"
-type="email"
-placeholder="Email Address"
-required
-/>
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearMsgs();
 
-<input
-id="phone"
-type="tel"
-placeholder="Phone Number"
-required
-pattern="[0-9+]{7,15}"
-title="Enter a valid phone number"
-/>
+      const firstName       = document.getElementById("firstName").value.trim();
+      const lastName        = document.getElementById("lastName").value.trim();
+      const email           = document.getElementById("email").value.trim();
+      const phone           = document.getElementById("phone").value.trim();
+      const password        = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
 
-<input
-id="password"
-type="password"
-placeholder="Password"
-required
-minlength="6"
-/>
+      const err = validate(firstName, lastName, email, phone, password, confirmPassword);
+      if (err) { showError(err); return; }
 
-<input
-id="confirmPassword"
-type="password"
-placeholder="Confirm Password"
-required
-/>
+      if (!auth || !db) {
+        showError("Firebase failed to initialize. Please refresh and try again.");
+        return;
+      }
 
-<button type="submit">Sign Up</button>
+      setLoading(true);
 
-</form>
+      try {
+        const { user } = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(user, { displayName: `${firstName} ${lastName}` });
+        await setDoc(doc(db, "users", user.uid), {
+          uid: user.uid, firstName, lastName, email, phone,
+          createdAt: serverTimestamp()
+        });
 
-</div>
+        showSuccess("Account created! Redirecting…");
+        setTimeout(() => { window.location.href = "dashboard.html"; }, 1500);
 
-<script type="module" src="scripts/firebase_signup.js"></script>
-
-
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyBrBvOZlmRWe7dawl-RKYxDtPNvRvagxzo",
-    authDomain: "trading-agent-8dd25.firebaseapp.com",
-    projectId: "trading-agent-8dd25",
-    storageBucket: "trading-agent-8dd25.firebasestorage.app",
-    messagingSenderId: "779879009062",
-    appId: "1:779879009062:web:60836b1d9c4ee37b6c0fe7",
-    measurementId: "G-F3B9GM6WYN"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
+      } catch (err) {
+        console.error("Signup error:", err.code, err.message);
+        const msgs = {
+          "auth/email-already-in-use":   "An account with this email already exists.",
+          "auth/invalid-email":          "Please enter a valid email address.",
+          "auth/weak-password":          "Password must be at least 6 characters.",
+          "auth/network-request-failed": "Network error. Check your connection.",
+          "auth/too-many-requests":      "Too many attempts. Please wait and try again.",
+          "auth/operation-not-allowed":  "Email sign-up is not enabled. Contact support.",
+          "permission-denied":           "Database rules blocked the write. Check Firestore rules."
+        };
+        showError(msgs[err.code] || `Error (${err.code}): ${err.message}`);
+        setLoading(false);
+      }
+    });
+  </script>
 </body>
-
 </html>
