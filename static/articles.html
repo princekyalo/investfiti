@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financial Analyst Articles</title>
+
+<style>
+
+:root{
+--bg:#0f172a;
+--panel:#1e293b;
+--border:#334155;
+--text:#e2e8f0;
+--muted:#94a3b8;
+
+--accent:#38bdf8;
+--green:#34d399;
+--purple:#a78bfa;
+--orange:#fb923c;
+}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+font-family:Segoe UI,Roboto,Arial;
+background:linear-gradient(135deg,#020617,#0f172a);
+color:var(--text);
+}
+
+/* NAVBAR */
+
+.navbar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:15px 30px;
+background:#020617;
+border-bottom:1px solid var(--border);
+position:sticky;
+top:0;
+z-index:1000;
+}
+
+.logo{
+font-weight:700;
+font-size:18px;
+color:var(--accent);
+}
+
+.nav-links a{
+margin-left:25px;
+text-decoration:none;
+color:var(--text);
+font-size:14px;
+padding:6px 10px;
+border-radius:6px;
+transition:0.3s;
+}
+
+.nav-links a:hover{
+background:rgba(56,189,248,0.15);
+color:var(--accent);
+}
+
+.nav-links a.active{
+background:rgba(56,189,248,0.25);
+color:var(--accent);
+}
+
+/* HEADER */
+
+.header{
+text-align:center;
+padding:40px 20px;
+}
+
+.header h1{
+font-size:32px;
+margin-bottom:10px;
+}
+
+.header p{
+color:var(--muted);
+}
+
+/* TABLE */
+
+.container{
+max-width:1100px;
+margin:auto;
+padding:20px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+background:var(--panel);
+border-radius:12px;
+overflow:hidden;
+box-shadow:0 10px 25px rgba(0,0,0,0.35);
+}
+
+th{
+background:#020617;
+padding:14px;
+font-size:13px;
+text-align:left;
+color:var(--muted);
+}
+
+td{
+padding:14px;
+border-top:1px solid var(--border);
+}
+
+tr:hover{
+background:#020617;
+}
+
+.publisher{
+font-weight:600;
+color:var(--accent);
+}
+
+/* ARTICLE BUTTON */
+
+.article-btn{
+width:100%;
+padding:10px 14px;
+border:none;
+background:linear-gradient(135deg,#38bdf8,#22c55e);
+color:#020617;
+font-weight:600;
+border-radius:8px;
+cursor:pointer;
+transition:0.25s;
+text-align:left;
+}
+
+.article-btn:hover{
+transform:scale(1.02);
+box-shadow:0 6px 12px rgba(0,0,0,0.35);
+}
+
+/* POPUP */
+
+.popup{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.8);
+display:none;
+justify-content:center;
+align-items:center;
+z-index:2000;
+}
+
+.popup-content{
+background:var(--panel);
+padding:40px;
+border-radius:12px;
+text-align:center;
+box-shadow:0 20px 40px rgba(0,0,0,0.6);
+}
+
+.close-btn{
+margin-top:20px;
+padding:10px 20px;
+border:none;
+background:var(--accent);
+color:black;
+font-weight:bold;
+border-radius:6px;
+cursor:pointer;
+}
+
+.close-btn:hover{
+opacity:0.9;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+
+<div class="navbar">
+<div class="logo">FINANCE HUB</div>
+
+<div class="nav-links">
+<a href="index.html">Home</a>
+<a href="news.html" class="active">News</a>
+<a href="auth.html">Login / Sign Up</a>
+<a href="help.html">Help</a>
+</div>
+</div>
+
+<!-- HEADER -->
+
+<div class="header">
+<h1>Financial Analyst Articles</h1>
+<p>Research insights from global financial institutions</p>
+</div>
+
+<!-- TABLE -->
+
+<div class="container">
+<table>
+
+<thead>
+<tr>
+<th>Publisher</th>
+<th>Article</th>
+<th>Year</th>
+</tr>
+</thead>
+
+<tbody id="articleTable"></tbody>
+
+</table>
+</div>
+
+<!-- AD POPUP -->
+
+<div class="popup" id="popup">
+<div class="popup-content">
+
+<svg width="300" height="120">
+<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+font-size="70" fill="#38bdf8" font-weight="bold">
+ADS
+</text>
+</svg>
+
+<button class="close-btn" onclick="closeAd()">Close Ad</button>
+
+</div>
+</div>
+
+<script>
+
+/* =========================
+JSON DATA
+========================= */
+
+const articleData = {
+
+articles:[
+
+{publisher:"Goldman Sachs",title:"Global Markets Outlook",year:2026,url:"https://example.com/article1"},
+{publisher:"Morgan Stanley",title:"AI Stocks Leading the Next Bull Run",year:2025,url:"https://example.com/article2"},
+{publisher:"JP Morgan",title:"Interest Rate Forecast Analysis",year:2025,url:"https://example.com/article3"},
+{publisher:"Bloomberg Intelligence",title:"Energy Sector Investment Opportunities",year:2024,url:"https://example.com/article4"},
+{publisher:"Reuters Breakingviews",title:"China Economic Growth Forecast",year:2024,url:"https://example.com/article5"},
+{publisher:"Financial Times",title:"Future of Global Trade",year:2026,url:"https://example.com/article6"},
+{publisher:"Citigroup Research",title:"Emerging Markets Equity Strategy",year:2025,url:"https://example.com/article7"},
+{publisher:"BlackRock",title:"Macro Trends Shaping Investments",year:2024,url:"https://example.com/article8"},
+{publisher:"UBS Research",title:"European Markets Forecast",year:2025,url:"https://example.com/article9"},
+{publisher:"Barclays",title:"Technology Sector Valuations",year:2026,url:"https://example.com/article10"},
+{publisher:"HSBC Research",title:"Currency Market Volatility",year:2024,url:"https://example.com/article11"},
+{publisher:"Morningstar",title:"ETF Portfolio Strategies",year:2025,url:"https://example.com/article12"},
+{publisher:"Fidelity Investments",title:"Long Term Growth Stocks",year:2025,url:"https://example.com/article13"},
+{publisher:"Bank of America",title:"US Equity Market Outlook",year:2026,url:"https://example.com/article14"},
+{publisher:"Nomura",title:"Asian Markets Forecast",year:2024,url:"https://example.com/article15"},
+{publisher:"Credit Suisse",title:"Risk Management Strategies",year:2025,url:"https://example.com/article16"},
+{publisher:"Deutsche Bank",title:"Global Economic Outlook",year:2026,url:"https://example.com/article17"},
+{publisher:"Standard Chartered",title:"Commodities Market Analysis",year:2024,url:"https://example.com/article18"},
+{publisher:"KPMG Insights",title:"Investment Risk Trends",year:2025,url:"https://example.com/article19"},
+{publisher:"Deloitte Research",title:"Digital Finance Transformation",year:2026,url:"https://example.com/article20"}
+
+]
+
+};
+
+/* =========================
+GENERATE TABLE
+========================= */
+
+const table=document.getElementById("articleTable");
+
+articleData.articles.forEach(article=>{
+
+let row=document.createElement("tr");
+
+row.innerHTML=`
+
+<td class="publisher">${article.publisher}</td>
+
+<td>
+<button class="article-btn" onclick="openAd('${article.url}')">
+${article.title}
+</button>
+</td>
+
+<td>${article.year}</td>
+
+`;
+
+table.appendChild(row);
+
+});
+
+/* =========================
+AD POPUP
+========================= */
+
+let selectedURL=null;
+
+function openAd(url){
+
+selectedURL=url;
+
+document.getElementById("popup").style.display="flex";
+
+}
+
+function closeAd(){
+
+document.getElementById("popup").style.display="none";
+
+if(selectedURL){
+window.location.href=selectedURL;
+}
+
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market News Terminal</title>
+
+<style>
+  :root{
+  --bg:#f4f7fb;
+  --panel:#ffffff;
+  --border:#e3e8ef;
+  --text:#2d3748;
+  --muted:#6b7c93;
+
+  --green:#38d39f;
+  --cyan:#4cc9f0;
+  --amber:#ffb454;
+}
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  background:linear-gradient(135deg,#f6f9fc,#eef3f9);
+  color:var(--text);
+  font-family:Segoe UI,Roboto,Arial,sans-serif;
+  overflow:hidden;
+}
+
+/* HEADER */
+
+.header{
+  padding:16px 24px;
+  font-weight:600;
+  font-size:18px;
+  letter-spacing:0.5px;
+  color:var(--green);
+  background:var(--panel);
+  border-bottom:1px solid var(--border);
+  border-radius:0 0 14px 14px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* TICKER */
+
+.ticker-wrap{
+  height:42px;
+  background:#ffffff;
+  border-bottom:1px solid var(--border);
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+}
+
+.ticker{
+  white-space:nowrap;
+  display:inline-block;
+  animation:scroll 60s linear infinite;
+}
+
+.ticker-item{
+  display:inline-block;
+  margin-right:50px;
+  font-size:14px;
+  font-weight:500;
+}
+
+@keyframes scroll{
+  from{transform:translateX(0)}
+  to{transform:translateX(-50%)}
+}
+
+/* MAIN LAYOUT */
+
+.main{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+  padding:20px;
+  height:calc(100vh - 100px);
+}
+
+/* PANELS */
+
+.panel{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:18px;
+  overflow:hidden;
+  box-shadow:0 4px 12px rgba(0,0,0,0.06);
+}
+
+.panel-title{
+  font-size:12px;
+  color:var(--muted);
+  margin-bottom:12px;
+  letter-spacing:1px;
+  font-weight:600;
+}
+
+/* NEWS ITEMS */
+
+.news-list{
+  position:relative;
+  transition:transform 0.6s ease;
+}
+
+.news-item{
+  padding:12px 0;
+  border-bottom:1px solid var(--border);
+  font-size:14px;
+  line-height:1.4;
+  transition:color 0.2s ease;
+}
+
+.news-item:last-child{
+  border-bottom:none;
+}
+
+.news-item:hover{
+  color:var(--cyan);
+}
+
+/* SOURCE COLORS */
+
+.gb{color:var(--cyan)}
+.citizen{color:var(--green)}
+.ntv{color:var(--amber)}
+
+/* FOOTER */
+
+.footer{
+  position:absolute;
+  bottom:0;
+  width:100%;
+  padding:10px 20px;
+  font-size:11px;
+  color:var(--muted);
+  border-top:1px solid var(--border);
+  background:#ffffff;
+  border-radius:14px 14px 0 0;
+  text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">MARKET NEWS TERMINAL</div>
+
+<div class="ticker-wrap">
+  <div class="ticker" id="ticker">Loading headlines...</div>
+</div>
+
+<div class="main">
+  <div class="panel">
+    <div class="panel-title">GLOBAL MARKETS</div>
+    <div class="news-list" id="panel1"></div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">BUSINESS & ECONOMY</div>
+    <div class="news-list" id="panel2"></div>
+  </div>
+</div>
+
+<div class="footer" id="footer">SYNCING...</div>
+
+
+
+
+
+<script>
+
+  function store_login_cookies() {
+    const COOKIE_NAME = "lastLogin";
+    const REDIRECT_PAGE = "auth.html";
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+    function getCookie(name) {
+        const cookies = document.cookie.split("; ");
+        for (let cookie of cookies) {
+            const [key, value] = cookie.split("=");
+            if (key === name) {
+                return decodeURIComponent(value);
+            }
+        }
+        return null;
+    }
+
+    function setCookie(name, value, days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        const expires = "expires=" + date.toUTCString();
+        document.cookie = `${name}=${encodeURIComponent(value)}; ${expires}; path=/`;
+    }
+
+    const existingLogin = getCookie(COOKIE_NAME);
+
+    if (existingLogin) {
+        const lastLoginDate = new Date(existingLogin);
+        const now = new Date();
+
+        if (now - lastLoginDate > SEVEN_DAYS_MS) {
+            window.location.href = "auth.html";
+            return;
+        }
+    }
+
+    // Update cookie with today's date
+    setCookie(COOKIE_NAME, new Date().toISOString(), 7);
+}
+
+// Run automatically when page loads
+window.addEventListener("load", store_login_cookies);
+
+
+
+
+
+const API_URL = "http://localhost:8000";
+let scrollIndex1 = 0;
+let scrollIndex2 = 0;
+
+console.info("[INIT] Market News Terminal Started");
+console.info("[CONFIG] API:", API_URL);
+
+/* ================================
+   FETCH FROM PORT 8000
+================================ */
+async function fetchNews() {
+  console.info("[FETCH] Requesting JSON from API...");
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "GET",
+      headers: { "Accept": "application/json" }
+    });
+
+    console.log("[FETCH] Status:", response.status);
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("[FETCH] Payload received:", data);
+
+    validateJSON(data);
+    buildUI(data);
+
+  } catch (error) {
+    console.error("[ERROR] Fetch failed:", error);
+    document.getElementById("ticker").innerText = "API CONNECTION FAILED";
+  }
+}
+
+/* ================================
+   VALIDATE JSON STRUCTURE
+================================ */
+function validateJSON(data) {
+  console.group("[VALIDATION]");
+
+  if (!data.generated_at) {
+    console.warn("Missing 'generated_at'");
+  } else {
+    console.log("generated_at:", data.generated_at);
+  }
+
+  if (!Array.isArray(data.sources)) {
+    console.error("'sources' is not an array");
+    console.groupEnd();
+    return;
+  }
+
+  data.sources.forEach((src, index) => {
+    console.group(`Source ${index + 1}`);
+
+    if (!src.source) console.warn("Missing source name");
+    if (!Array.isArray(src.articles))
+      console.error("Articles is not an array");
+
+    if (src.article_count !== src.articles.length) {
+      console.warn(
+        `article_count mismatch. Expected: ${src.article_count}, Actual: ${src.articles.length}`
+      );
+    }
+
+    console.log("Source:", src.source);
+    console.log("Articles:", src.articles.length);
+
+    console.groupEnd();
+  });
+
+  console.groupEnd();
+}
+
+/* ================================
+   BUILD TERMINAL UI
+================================ */
+function buildUI(data) {
+  console.info("[UI] Rendering data...");
+
+  const ticker = document.getElementById("ticker");
+  const panel1 = document.getElementById("panel1");
+  const panel2 = document.getElementById("panel2");
+  const footer = document.getElementById("footer");
+
+  ticker.innerHTML = "";
+  panel1.innerHTML = "";
+  panel2.innerHTML = "";
+
+  let headlines = [];
+
+  data.sources.forEach(src => {
+
+    let cssClass = "";
+    if (src.source.includes("GB")) cssClass = "gb";
+    if (src.source.includes("Citizen")) cssClass = "citizen";
+    if (src.source.includes("NTV")) cssClass = "ntv";
+
+    src.articles.forEach(title => {
+      headlines.push({
+        text: title,
+        class: cssClass
+      });
+    });
+  });
+
+  console.log("[DATA] Total raw headlines:", headlines.length);
+
+  /* Optional: Remove duplicates across sources */
+  const uniqueMap = new Map();
+  headlines.forEach(h => {
+    if (!uniqueMap.has(h.text)) {
+      uniqueMap.set(h.text, h);
+    }
+  });
+
+  const uniqueHeadlines = Array.from(uniqueMap.values());
+  console.log("[DATA] Unique headlines:", uniqueHeadlines.length);
+
+  /* Horizontal ticker */
+  ticker.innerHTML =
+    uniqueHeadlines
+      .map(h => `<span class="ticker-item ${h.class}">${h.text}</span>`)
+      .join("") +
+    uniqueHeadlines
+      .map(h => `<span class="ticker-item ${h.class}">${h.text}</span>`)
+      .join("");
+
+  /* Vertical panels split */
+  const midpoint = Math.ceil(uniqueHeadlines.length / 2);
+
+  panel1.innerHTML = uniqueHeadlines
+    .slice(0, midpoint)
+    .map(h => `<div class="news-item ${h.class}">${h.text}</div>`)
+    .join("");
+
+  panel2.innerHTML = uniqueHeadlines
+    .slice(midpoint)
+    .map(h => `<div class="news-item ${h.class}">${h.text}</div>`)
+    .join("");
+
+  /* Reset scroll */
+  scrollIndex1 = 0;
+  scrollIndex2 = 0;
+  panel1.style.transform = "translateY(0)";
+  panel2.style.transform = "translateY(0)";
+
+  footer.innerText =
+    "Last Updated: " +
+    new Date(data.generated_at).toLocaleString();
+
+  console.info("[UI] Render complete.");
+}
+
+/* ================================
+   AUTO VERTICAL SCROLL
+================================ */
+setInterval(() => {
+  const p1 = document.getElementById("panel1");
+  const p2 = document.getElementById("panel2");
+
+  scrollIndex1++;
+  scrollIndex2++;
+
+  p1.style.transform = `translateY(-${scrollIndex1 * 50}px)`;
+  p2.style.transform = `translateY(-${scrollIndex2 * 50}px)`;
+
+  console.log("[SCROLL]", scrollIndex1, scrollIndex2);
+
+}, 3000);
+
+/* ================================
+   INIT + POLLING
+================================ */
+fetchNews();
+setInterval(fetchNews, 120000);
+</script>
+
+
+
+</body>
+</html>

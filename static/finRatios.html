@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Metrics Calculator with Input Popups</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        :root {
+            --primary: #2A4365;
+            --secondary: #4299E1;
+            --success: #48BB78;
+            --warning: #ECC94B;
+            --danger: #F56565;
+            --dark: #1A202C;
+            --light: #F7FAFC;
+            --gray: #A0AEC0;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+            border-color: var(--secondary);
+        }
+
+        .metric-card h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .metric-card p {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .metric-formula {
+            background: var(--light);
+            padding: 10px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: var(--dark);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light);
+        }
+
+        .modal-header h2 {
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+            transition: color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: var(--danger);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--light);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--secondary);
+        }
+
+        .input-help {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .result-display {
+            margin-top: 20px;
+            padding: 20px;
+            background: var(--light);
+            border-radius: 10px;
+            display: none;
+        }
+
+        .result-display.show {
+            display: block;
+        }
+
+        .result-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .result-interpretation {
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            color: var(--dark);
+        }
+
+        .results-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-top: 30px;
+        }
+
+        .results-section h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .result-card {
+            background: var(--light);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .result-card h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .result-card .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--secondary);
+            margin-bottom: 5px;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+            border-bottom: 1px dotted var(--gray);
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 7 Key Financial Metrics Calculator</h1>
+
+        <div class="metrics-grid">
+            <!-- P/E Ratio Card -->
+            <div class="metric-card" onclick="openModal('pe')">
+                <h3>📈 P/E Ratio</h3>
+                <p>Price-to-Earnings - Measures valuation by comparing price to earnings</p>
+                <div class="metric-formula">P/E = Price / EPS</div>
+            </div>
+
+            <!-- PEG Ratio Card -->
+            <div class="metric-card" onclick="openModal('peg')">
+                <h3>📊 PEG Ratio</h3>
+                <p>Price/Earnings-to-Growth - Adjusts P/E for growth expectations [citation:2]</p>
+                <div class="metric-formula">PEG = (Price / EPS) / Growth Rate</div>
+            </div>
+
+            <!-- PEGY Ratio Card -->
+            <div class="metric-card" onclick="openModal('pegy')">
+                <h3>💰 PEGY Ratio</h3>
+                <p>P/E to Growth & Yield - Includes dividends for mature companies [citation:6]</p>
+                <div class="metric-formula">PEGY = (Price / EPS) / (Growth Rate + Dividend Yield)</div>
+            </div>
+
+            <!-- Sharpe Ratio Card -->
+            <div class="metric-card" onclick="openModal('sharpe')">
+                <h3>⚡ Sharpe Ratio</h3>
+                <p>Risk-adjusted return measure</p>
+                <div class="metric-formula">Sharpe = (Return - Risk-Free) / Std Dev</div>
+            </div>
+
+            <!-- Price to Book Card -->
+            <div class="metric-card" onclick="openModal('pb')">
+                <h3>📚 Price to Book</h3>
+                <p>Compares market value to book value</p>
+                <div class="metric-formula">P/B = Price / Book Value per Share</div>
+            </div>
+
+            <!-- ROE Card -->
+            <div class="metric-card" onclick="openModal('roe')">
+                <h3>🔄 Return on Equity</h3>
+                <p>Profitability relative to shareholder equity</p>
+                <div class="metric-formula">ROE = Net Income / Shareholder's Equity</div>
+            </div>
+
+            <!-- D/E Card -->
+            <div class="metric-card" onclick="openModal('de')">
+                <h3>⚖️ Debt to Equity</h3>
+                <p>Leverage ratio measuring financial risk</p>
+                <div class="metric-formula">D/E = Total Liabilities / Shareholder's Equity</div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section">
+            <h2>📋 Calculated Metrics</h2>
+            <div class="results-grid" id="resultsGrid">
+                <!-- Results will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- P/E Ratio Modal -->
+    <div id="modal-pe" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📈 P/E Ratio Calculator</h2>
+                <button class="close-btn" onclick="closeModal('pe')">&times;</button>
+            </div>
+            <div class="input-group">
+                <label>Current Stock Price ($) <span class="tooltip">ⓘ<span class="tooltiptext">Current market price per share</span></span></label>
+                <input type="number" id="pe-price" step="0.01" placeholder="e.g., 45.50">
+            </div>
+            <div class="input-group">
+                <label>Earnings Per Share (EPS) ($) <span class="tooltip">ⓘ<span class="tooltiptext">Net income divided by shares outstanding [citation:5]</span></span></label>
+                <input type="number" id="pe-eps" step="0.01" placeholder="e.g., 3.75">
+                <div class="input-help">Use trailing 12-month EPS for accuracy</div>
+            </div>
+            <button class="calculate-btn" onclick="calculatePE()">Calculate P/E Ratio</button>
+            <div class="result-display" id="pe-result">
+                <div class="result-value" id="pe-value"></div>
+                <div class="result-interpretation" id="pe-interpretation"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PEG Ratio Modal -->
+    <div id="modal-peg" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📊 PEG Ratio Calculator</h2>
+                <button class="close-btn" onclick="closeModal('peg')">&times;</button>
+            </div>
+            <div class="input-group">
+                <label>Current Stock Price ($)</label>
+                <input type="number" id="peg-price" step="0.01" placeholder="e.g., 45.50">
+            </div>
+            <div class="input-group">
+                <label>Earnings Per Share (EPS) ($)</label>
+                <input type="number" id="peg-eps" step="0.01" placeholder="e.g., 3.75">
+            </div>
+            <div class="input-group">
+                <label>Expected Earnings Growth Rate (%) <span class="tooltip">ⓘ<span class="tooltiptext">Projected annual EPS growth for next 3-5 years [citation:2]</span></span></label>
+                <input type="number" id="peg-growth" step="0.1" placeholder="e.g., 15">
+                <div class="input-help">Use analyst estimates or historical growth</div>
+            </div>
+            <button class="calculate-btn" onclick="calculatePEG()">Calculate PEG Ratio</button>
+            <div class="result-display" id="peg-result">
+                <div class="result-value" id="peg-value"></div>
+                <div class="result-interpretation" id="peg-interpretation"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PEGY Ratio Modal -->
+    <div id="modal-pegy" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>💰 PEGY Ratio Calculator</h2>
+                <button class="close-btn" onclick="closeModal('pegy')">&times;</button>
+            </div>
+            <div class="input-group">
+                <label>Current Stock Price ($)</label>
+                <input type="number" id="pegy-price" step="0.01" placeholder="e.g., 45.50">
+            </div>
+            <div class="input-group">
+                <label>Earnings Per Share (EPS) ($)</label>
+                <input type="number" id="pegy-eps" step="0.01" placeholder="e.g., 3.75">
+            </div>
+            <div class="input-group">
+                <label>Expected Earnings Growth Rate (%) <span class="tooltip">ⓘ<span class="tooltiptext">Projected annual EPS growth for next 3-5 years [citation:6]</span></span></label>
+                <input type="number" id="pegy-growth" step="0.1" placeholder="e.g., 15">
+            </div>
+            <div class="input-group">
+                <label>Annual Dividend Per Share ($) <span class="tooltip">ⓘ<span class="tooltiptext">Latest annual dividend paid [citation:3]</span></span></label>
+                <input type="number" id="pegy-dividend" step="0.01" placeholder="e.g., 2.50">
+            </div>
+            <div class="input-help">PEGY = P/E / (Growth Rate + Dividend Yield). Developed by Peter Lynch for mature companies with dividends [citation:10]</div>
+            <button class="calculate-btn" onclick="calculatePEGY()">Calculate PEGY Ratio</button>
+            <div class="result-display" id="pegy-result">
+                <div class="result-value" id="pegy-value"></div>
+                <div class="result-interpretation" id="pegy-interpretation"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sharpe Ratio Modal -->
+    <div id="modal-sharpe" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚡ Sharpe Ratio Calculator</h2>
+                <button class="close-btn" onclick="closeModal('sharpe')">&times;</button>
+            </div>
+            <div class="input-group">
+                <label>Expected Portfolio Return (%)</label>
+                <input type="number" id="sharpe-return" step="0.1" placeholder="e.g., 12">
+            </div>
+            <div class="input-group">
+                <label>Risk-Free Rate (%)</label>
+                <input type="number" id="sharpe-riskfree" step="0.1" placeholder="e.g., 3.5">
+                <div class="input-help">Typically use 10-year government bond yield</div>
+            </div>
+            <div class="input-group">
+                <label>Standard Deviation of Returns (%)</label>
+                <input type="number" id="sharpe-std" step="0.1" placeholder="e.g., 15">
+                <div class="input-help">Measures volatility of returns</div>
+            </div>
+            <button class="calculate-btn" onclick="calculateSharpe()">Calculate Sharpe Ratio</button>
+            <div class="result-display" id="sharpe-result">
+                <div class="result-value" id="sharpe-value"></div>
+                <div class="result-interpretation" id="sharpe-interpretation"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Price to Book Modal -->
+    <div id="modal-pb" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📚 Price to Book Calculator</h2>
+                <button class="close-btn" onclick="closeModal('pb')">&times;</button>
+            </div>
+            <div class="input-group">
+                <label>Current Stock Price ($)</label>
+                <input type="number" id="pb-price" step="0.01" placeholder="e.g., 45.50">
+            </div>
+            <div class="input-group">
+                <label>Book Value Per Share ($) <span class="tooltip">ⓘ<span class="tooltiptext">(Total Assets - Total Liabilities) / Shares Outstanding</span></span></label>
+                <input type="number" id="pb-book" step="0.01" placeholder="e.g., 32.80">
+            </div>
+            <button class="calculate-btn" onclick="calculatePB()">Calculate P/B Ratio</button>
+            <div class="result-display" id="pb-result">
+                <div class="result-value" id="pb-value"></div>
+                <div class="result-interpretation" id="pb-interpretation"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROE Modal -->
+    <div id="modal-roe" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔄 Return on Equity Calculator</h2>
+                <button class="close-btn" onclick="closeModal('roe')">&times;</button>
+            </div>
+            <div class="input-group">
+                <label>Net Income ($)</label>
+                <input type="number" id="roe-income" step="1000" placeholder="e.g., 45000000">
+            </div>
+            <div class="input-group">
+                <label>Shareholder's Equity ($)</label>
+                <input type="number" id="roe-equity" step="1000" placeholder="e.g., 280000000">
+            </div>
+            <button class="calculate-btn" onclick="calculateROE()">Calculate ROE</button>
+            <div class="result-display" id="roe-result">
+                <div class="result-value" id="roe-value"></div>
+                <div class="result-interpretation" id="roe-interpretation"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- D/E Modal -->
+    <div id="modal-de" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚖️ Debt to Equity Calculator</h2>
+                <button class="close-btn" onclick="closeModal('de')">&times;</button>
+            </div>
+            <div class="input-group">
+                <label>Total Liabilities ($)</label>
+                <input type="number" id="de-liabilities" step="1000" placeholder="e.g., 420000000">
+            </div>
+            <div class="input-group">
+                <label>Shareholder's Equity ($)</label>
+                <input type="number" id="de-equity" step="1000" placeholder="e.g., 280000000">
+            </div>
+            <button class="calculate-btn" onclick="calculateDE()">Calculate D/E Ratio</button>
+            <div class="result-display" id="de-result">
+                <div class="result-value" id="de-value"></div>
+                <div class="result-interpretation" id="de-interpretation"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+
+        function store_login_cookies() {
+    const COOKIE_NAME = "lastLogin";
+    const REDIRECT_PAGE = "auth.html";
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+    function getCookie(name) {
+        const cookies = document.cookie.split("; ");
+        for (let cookie of cookies) {
+            const [key, value] = cookie.split("=");
+            if (key === name) {
+                return decodeURIComponent(value);
+            }
+        }
+        return null;
+    }
+
+    function setCookie(name, value, days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        const expires = "expires=" + date.toUTCString();
+        document.cookie = `${name}=${encodeURIComponent(value)}; ${expires}; path=/`;
+    }
+
+    const existingLogin = getCookie(COOKIE_NAME);
+
+    if (existingLogin) {
+        const lastLoginDate = new Date(existingLogin);
+        const now = new Date();
+
+        if (now - lastLoginDate > SEVEN_DAYS_MS) {
+            window.location.href = "auth.html";
+            return;
+        }
+    }
+
+    // Update cookie with today's date
+    setCookie(COOKIE_NAME, new Date().toISOString(), 7);
+}
+
+// Run automatically when page loads
+window.addEventListener("load", store_login_cookies);
+
+
+
+        // Store results
+        let results = {
+            pe: null,
+            peg: null,
+            pegy: null,
+            sharpe: null,
+            pb: null,
+            roe: null,
+            de: null
+        };
+
+        // Open modal
+        function openModal(metric) {
+            document.getElementById(`modal-${metric}`).classList.add('active');
+        }
+
+        // Close modal
+        function closeModal(metric) {
+            document.getElementById(`modal-${metric}`).classList.remove('active');
+            // Hide result display when closing
+            const resultDiv = document.getElementById(`${metric}-result`);
+            if (resultDiv) {
+                resultDiv.classList.remove('show');
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+
+        // Update results grid
+        function updateResultsGrid() {
+            const grid = document.getElementById('resultsGrid');
+            grid.innerHTML = '';
+            
+            const metrics = [
+                { key: 'pe', name: 'P/E Ratio', unit: '' },
+                { key: 'peg', name: 'PEG Ratio', unit: '' },
+                { key: 'pegy', name: 'PEGY Ratio', unit: '' },
+                { key: 'sharpe', name: 'Sharpe Ratio', unit: '' },
+                { key: 'pb', name: 'P/B Ratio', unit: '' },
+                { key: 'roe', name: 'ROE', unit: '%' },
+                { key: 'de', name: 'D/E Ratio', unit: '' }
+            ];
+
+            metrics.forEach(metric => {
+                if (results[metric.key] !== null) {
+                    const card = document.createElement('div');
+                    card.className = 'result-card';
+                    card.innerHTML = `
+                        <h4>${metric.name}</h4>
+                        <div class="value">${results[metric.key].toFixed(2)}${metric.unit}</div>
+                        <div>${getInterpretation(metric.key, results[metric.key])}</div>
+                    `;
+                    grid.appendChild(card);
+                }
+            });
+        }
+
+        // Get interpretation for each metric
+        function getInterpretation(metric, value) {
+            switch(metric) {
+                case 'pe':
+                    if (value < 10) return '🔵 Potentially undervalued';
+                    if (value < 20) return '🟢 Fair value';
+                    if (value < 30) return '🟡 Growth expectations';
+                    return '🔴 Potentially overvalued';
+                case 'peg':
+                    if (value < 1) return '🔵 Undervalued [citation:2]';
+                    if (value < 1.5) return '🟢 Fair value';
+                    if (value < 2) return '🟡 Slightly overvalued';
+                    return '🔴 Overvalued';
+                case 'pegy':
+                    if (value < 0.5) return '🔵 Fabulous (Lynch) [citation:10]';
+                    if (value < 0.67) return '🟢 Okay [citation:10]';
+                    if (value < 1) return '🟡 Reasonable';
+                    return '🔴 Poor [citation:10]';
+                case 'sharpe':
+                    if (value > 2) return '🔵 Excellent';
+                    if (value > 1) return '🟢 Good';
+                    if (value > 0) return '🟡 Acceptable';
+                    return '🔴 Poor';
+                case 'pb':
+                    if (value < 1) return '🔵 Below book value';
+                    if (value < 2) return '🟢 Moderate';
+                    if (value < 4) return '🟡 Premium';
+                    return '🔴 High premium';
+                case 'roe':
+                    if (value > 25) return '🔵 Excellent';
+                    if (value > 20) return '🟢 Very good';
+                    if (value > 15) return '🟡 Good';
+                    if (value > 10) return '🟠 Average';
+                    return '🔴 Poor';
+                case 'de':
+                    if (value < 0.3) return '🔵 Low risk';
+                    if (value < 0.8) return '🟢 Moderate';
+                    if (value < 1.5) return '🟡 High';
+                    return '🔴 Very high risk';
+                default:
+                    return '';
+            }
+        }
+
+        // Calculate P/E Ratio
+        function calculatePE() {
+            const price = parseFloat(document.getElementById('pe-price').value);
+            const eps = parseFloat(document.getElementById('pe-eps').value);
+            
+            if (isNaN(price) || isNaN(eps) || eps === 0) {
+                alert('Please enter valid numbers');
+                return;
+            }
+            
+            const pe = price / eps;
+            results.pe = pe;
+            
+            document.getElementById('pe-value').textContent = pe.toFixed(2);
+            document.getElementById('pe-interpretation').innerHTML = getInterpretation('pe', pe);
+            document.getElementById('pe-result').classList.add('show');
+            
+            updateResultsGrid();
+        }
+
+        // Calculate PEG Ratio [citation:2][citation:9]
+        function calculatePEG() {
+            const price = parseFloat(document.getElementById('peg-price').value);
+            const eps = parseFloat(document.getElementById('peg-eps').value);
+            const growth = parseFloat(document.getElementById('peg-growth').value);
+            
+            if (isNaN(price) || isNaN(eps) || isNaN(growth) || eps === 0 || growth === 0) {
+                alert('Please enter valid numbers');
+                return;
+            }
+            
+            const pe = price / eps;
+            const peg = pe / growth;
+            results.peg = peg;
+            
+            document.getElementById('peg-value').textContent = peg.toFixed(2);
+            document.getElementById('peg-interpretation').innerHTML = getInterpretation('peg', peg);
+            document.getElementById('peg-result').classList.add('show');
+            
+            updateResultsGrid();
+        }
+
+        // Calculate PEGY Ratio [citation:3][citation:6][citation:10]
+        function calculatePEGY() {
+            const price = parseFloat(document.getElementById('pegy-price').value);
+            const eps = parseFloat(document.getElementById('pegy-eps').value);
+            const growth = parseFloat(document.getElementById('pegy-growth').value);
+            const dividend = parseFloat(document.getElementById('pegy-dividend').value);
+            
+            if (isNaN(price) || isNaN(eps) || isNaN(growth) || isNaN(dividend) || eps === 0) {
+                alert('Please enter valid numbers');
+                return;
+            }
+            
+            const pe = price / eps;
+            const dividendYield = (dividend / price) * 100;
+            const pegy = pe / (growth + dividendYield);
+            results.pegy = pegy;
+            
+            document.getElementById('pegy-value').textContent = pegy.toFixed(2);
+            document.getElementById('pegy-interpretation').innerHTML = getInterpretation('pegy', pegy);
+            document.getElementById('pegy-result').classList.add('show');
+            
+            updateResultsGrid();
+        }
+
+        // Calculate Sharpe Ratio
+        function calculateSharpe() {
+            const ret = parseFloat(document.getElementById('sharpe-return').value);
+            const rf = parseFloat(document.getElementById('sharpe-riskfree').value);
+            const std = parseFloat(document.getElementById('sharpe-std').value);
+            
+            if (isNaN(ret) || isNaN(rf) || isNaN(std) || std === 0) {
+                alert('Please enter valid numbers');
+                return;
+            }
+            
+            const sharpe = (ret - rf) / std;
+            results.sharpe = sharpe;
+            
+            document.getElementById('sharpe-value').textContent = sharpe.toFixed(2);
+            document.getElementById('sharpe-interpretation').innerHTML = getInterpretation('sharpe', sharpe);
+            document.getElementById('sharpe-result').classList.add('show');
+            
+            updateResultsGrid();
+        }
+
+        // Calculate Price to Book
+        function calculatePB() {
+            const price = parseFloat(document.getElementById('pb-price').value);
+            const book = parseFloat(document.getElementById('pb-book').value);
+            
+            if (isNaN(price) || isNaN(book) || book === 0) {
+                alert('Please enter valid numbers');
+                return;
+            }
+            
+            const pb = price / book;
+            results.pb = pb;
+            
+            document.getElementById('pb-value').textContent = pb.toFixed(2);
+            document.getElementById('pb-interpretation').innerHTML = getInterpretation('pb', pb);
+            document.getElementById('pb-result').classList.add('show');
+            
+            updateResultsGrid();
+        }
+
+        // Calculate ROE
+        function calculateROE() {
+            const income = parseFloat(document.getElementById('roe-income').value);
+            const equity = parseFloat(document.getElementById('roe-equity').value);
+            
+            if (isNaN(income) || isNaN(equity) || equity === 0) {
+                alert('Please enter valid numbers');
+                return;
+            }
+            
+            const roe = (income / equity) * 100;
+            results.roe = roe;
+            
+            document.getElementById('roe-value').textContent = roe.toFixed(2) + '%';
+            document.getElementById('roe-interpretation').innerHTML = getInterpretation('roe', roe);
+            document.getElementById('roe-result').classList.add('show');
+            
+            updateResultsGrid();
+        }
+
+        // Calculate Debt to Equity
+        function calculateDE() {
+            const liabilities = parseFloat(document.getElementById('de-liabilities').value);
+            const equity = parseFloat(document.getElementById('de-equity').value);
+            
+            if (isNaN(liabilities) || isNaN(equity) || equity === 0) {
+                alert('Please enter valid numbers');
+                return;
+            }
+            
+            const de = liabilities / equity;
+            results.de = de;
+            
+            document.getElementById('de-value').textContent = de.toFixed(2);
+            document.getElementById('de-interpretation').innerHTML = getInterpretation('de', de);
+            document.getElementById('de-result').classList.add('show');
+            
+            updateResultsGrid();
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

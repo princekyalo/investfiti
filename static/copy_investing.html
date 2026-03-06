@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Copy Investing Portfolios</title>
+
+<style>
+
+:root{
+--bg:#0f172a;
+--panel:#1e293b;
+--border:#334155;
+--text:#e2e8f0;
+--muted:#94a3b8;
+
+--cyan:#22d3ee;
+--green:#34d399;
+--purple:#a78bfa;
+--orange:#fb923c;
+}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+background:linear-gradient(135deg,#0f172a,#020617);
+font-family:Segoe UI,Roboto,Arial,sans-serif;
+color:var(--text);
+}
+
+/* NAVBAR */
+
+.navbar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:16px 30px;
+background:#020617;
+border-bottom:1px solid var(--border);
+position:sticky;
+top:0;
+z-index:1000;
+}
+
+.logo{
+font-weight:700;
+font-size:18px;
+color:var(--cyan);
+letter-spacing:1px;
+}
+
+.nav-links a{
+margin-left:25px;
+text-decoration:none;
+color:var(--text);
+font-size:14px;
+transition:0.2s;
+}
+
+.nav-links a:hover{
+color:var(--cyan);
+}
+
+/* PAGE HEADER */
+
+.header{
+padding:40px 20px;
+text-align:center;
+}
+
+.header h1{
+font-size:32px;
+margin-bottom:10px;
+}
+
+.header p{
+color:var(--muted);
+}
+
+/* PORTFOLIO CONTAINER */
+
+.container{
+max-width:1200px;
+margin:auto;
+padding:20px;
+}
+
+/* PORTFOLIO CARD */
+
+.portfolio-card{
+background:var(--panel);
+border:1px solid var(--border);
+border-radius:12px;
+padding:20px;
+margin-bottom:25px;
+box-shadow:0 10px 20px rgba(0,0,0,0.25);
+transition:0.3s;
+}
+
+.portfolio-card:hover{
+transform:translateY(-3px);
+}
+
+.portfolio-title{
+font-size:20px;
+margin-bottom:15px;
+color:var(--cyan);
+}
+
+/* TABLE */
+
+table{
+width:100%;
+border-collapse:collapse;
+border-radius:10px;
+overflow:hidden;
+}
+
+th{
+background:#020617;
+padding:12px;
+font-size:13px;
+text-align:left;
+color:var(--muted);
+}
+
+td{
+padding:12px;
+border-top:1px solid var(--border);
+font-size:14px;
+}
+
+tr:hover{
+background:#020617;
+}
+
+/* TICKER BADGE */
+
+.ticker{
+padding:4px 8px;
+border-radius:6px;
+font-weight:600;
+font-size:12px;
+}
+
+.ticker.cyan{background:rgba(34,211,238,0.2);color:var(--cyan);}
+.ticker.green{background:rgba(52,211,153,0.2);color:var(--green);}
+.ticker.purple{background:rgba(167,139,250,0.2);color:var(--purple);}
+.ticker.orange{background:rgba(251,146,60,0.2);color:var(--orange);}
+
+/* FOOTER */
+
+.footer{
+text-align:center;
+padding:20px;
+color:var(--muted);
+font-size:12px;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+
+<div class="navbar">
+<div class="logo">COPY INVEST</div>
+
+<div class="nav-links">
+<a href="index.html">Home</a>
+<a href="news.html">News</a>
+<a href="auth.html">Login / Sign Up</a>
+<a href="help.html">Help</a>
+</div>
+</div>
+
+<!-- HEADER -->
+
+<div class="header">
+<h1>Copy Investing Portfolios</h1>
+<p>Explore institutional portfolios and copy their investment strategies.</p>
+</div>
+
+<div class="container" id="portfolioContainer"></div>
+
+<div class="footer">
+Copy Investing Platform • Data Powered by JSON
+</div>
+
+<script>
+
+/* ==============================
+JSON DATA CONTROLS THE WEBSITE
+============================== */
+
+const portfolioData = {
+institutions:[
+
+{
+name:"Berkshire Hathaway",
+stocks:[
+{company:"Apple",ticker:"AAPL"},
+{company:"Bank of America",ticker:"BAC"},
+{company:"Coca Cola",ticker:"KO"},
+{company:"American Express",ticker:"AXP"}
+]
+},
+
+{
+name:"BlackRock",
+stocks:[
+{company:"Microsoft",ticker:"MSFT"},
+{company:"Nvidia",ticker:"NVDA"},
+{company:"Amazon",ticker:"AMZN"},
+{company:"Tesla",ticker:"TSLA"}
+]
+},
+
+{
+name:"Bridgewater Associates",
+stocks:[
+{company:"Procter & Gamble",ticker:"PG"},
+{company:"Johnson & Johnson",ticker:"JNJ"},
+{company:"PepsiCo",ticker:"PEP"},
+{company:"Visa",ticker:"V"}
+]
+}
+
+]
+};
+
+/* ==============================
+GENERATE TABLES DYNAMICALLY
+============================== */
+
+function createPortfolios(){
+
+const container=document.getElementById("portfolioContainer");
+
+portfolioData.institutions.forEach((inst,index)=>{
+
+let card=document.createElement("div");
+card.className="portfolio-card";
+
+let title=document.createElement("div");
+title.className="portfolio-title";
+title.innerText=inst.name;
+
+let table=document.createElement("table");
+
+let thead=`
+<tr>
+<th>Company</th>
+<th>Ticker</th>
+</tr>
+`;
+
+let rows="";
+
+inst.stocks.forEach((stock,i)=>{
+
+const colors=["cyan","green","purple","orange"];
+const color=colors[i%colors.length];
+
+rows+=`
+<tr>
+<td>${stock.company}</td>
+<td><span class="ticker ${color}">${stock.ticker}</span></td>
+</tr>
+`;
+
+});
+
+table.innerHTML=thead+rows;
+
+card.appendChild(title);
+card.appendChild(table);
+
+container.appendChild(card);
+
+});
+
+}
+
+/* INIT */
+
+createPortfolios();
+
+</script>
+
+</body>
+</html>

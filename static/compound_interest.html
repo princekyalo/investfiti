@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compound Interest Calculator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1117;--card:#1a2035;--card2:#1e263d;--border:rgba(255,255,255,0.07);--teal:#2dd4bf;--purple:#a78bfa;--orange:#fb923c;--yellow:#fbbf24;--text:#f0f4ff;--soft:#94a3b8;--danger:#f87171;--safe:#34d399;--r:20px;--r-sm:14px;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;background-image:radial-gradient(ellipse 80% 50% at 10% -10%,rgba(45,212,191,0.08) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 90% 110%,rgba(167,139,250,0.08) 0%,transparent 60%);}
+header{padding:16px 40px;display:flex;align-items:center;gap:14px;background:rgba(15,17,23,0.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;}
+.logo-pill{background:linear-gradient(135deg,var(--teal),#818cf8);border-radius:10px;padding:7px 13px;font-size:13px;font-weight:900;color:#0d1a18;letter-spacing:0.5px;}
+.header-title{font-size:20px;font-weight:800;color:var(--text);letter-spacing:-0.3px;}
+.header-title span{color:var(--teal);}
+.header-sub{margin-left:auto;font-size:11px;font-weight:700;color:var(--soft);background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:20px;padding:4px 14px;}
+.api-status{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--soft);background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:20px;padding:4px 12px;}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--yellow);}
+.status-dot.live{background:var(--safe);box-shadow:0 0 6px var(--safe);}
+.status-dot.fallback{background:var(--yellow);box-shadow:0 0 6px var(--yellow);}
+main{max-width:1300px;margin:0 auto;padding:36px 40px;}
+.top-grid{display:grid;grid-template-columns:360px 1fr;gap:22px;margin-bottom:22px;align-items:start;}
+.bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:22px;}
+.card{background:var(--card);border-radius:var(--r);border:1px solid var(--border);padding:28px;position:relative;overflow:hidden;box-shadow:0 4px 32px rgba(0,0,0,0.35);}
+.glow-orb{position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(45,212,191,0.07) 0%,transparent 70%);pointer-events:none;}
+.section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.4px;color:var(--teal);margin-bottom:22px;display:flex;align-items:center;gap:8px;}
+.section-title .dot{width:6px;height:6px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px var(--teal);}
+.form-group{margin-bottom:14px;}
+label{display:block;font-size:12px;font-weight:700;color:var(--soft);margin-bottom:7px;}
+input[type=number],input[type=text],select{width:100%;background:var(--bg);border:1.5px solid rgba(255,255,255,0.08);border-radius:var(--r-sm);color:var(--text);padding:11px 15px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:600;outline:none;transition:border-color .25s,box-shadow .25s,background .25s;appearance:none;}
+input:focus,select:focus{border-color:var(--teal);background:rgba(45,212,191,0.04);box-shadow:0 0 0 4px rgba(45,212,191,0.1);}
+input::placeholder{color:rgba(148,163,184,0.4);font-weight:500;font-size:13px;}
+select option{background:#1a2035;color:var(--text);}
+.hint{font-size:11px;font-weight:600;color:rgba(148,163,184,0.55);margin-top:4px;padding-left:2px;}
+.sep{display:flex;align-items:center;gap:12px;margin:18px 0;color:rgba(148,163,184,0.4);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;}
+.sep::before,.sep::after{content:'';flex:1;height:1px;background:var(--border);}
+.btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--teal) 0%,#38b2ac 100%);color:#0d1a18;border:none;border-radius:var(--r-sm);font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;cursor:pointer;transition:all .25s;margin-top:8px;box-shadow:0 4px 18px rgba(45,212,191,0.3);display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(45,212,191,0.45);filter:brightness(1.1);}
+.btn:active{transform:translateY(0);}
+.btn-compare{padding:12px 24px;width:auto;background:linear-gradient(135deg,var(--purple) 0%,#7c3aed 100%);box-shadow:0 4px 18px rgba(167,139,250,0.3);}
+.btn-compare:hover{box-shadow:0 8px 28px rgba(167,139,250,0.45);}
+.btn-ghost{width:auto;padding:12px 20px;background:rgba(255,255,255,0.06);color:var(--soft);box-shadow:none;border:1px solid var(--border);}
+.btn-ghost:hover{background:rgba(255,255,255,0.1);box-shadow:none;filter:none;}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:0;}
+.stat-card{background:var(--card2);border-radius:var(--r-sm);border:1.5px solid rgba(255,255,255,0.06);padding:20px;transition:all .35s cubic-bezier(.34,1.56,.64,1);position:relative;overflow:hidden;}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0;opacity:0;transition:opacity .3s;}
+.stat-card.teal-top::after{background:linear-gradient(90deg,var(--teal),var(--purple));}
+.stat-card.purple-top::after{background:linear-gradient(90deg,var(--purple),#f472b6);}
+.stat-card.orange-top::after{background:linear-gradient(90deg,var(--orange),var(--yellow));}
+.stat-card.lit::after{opacity:1;}
+.stat-card.lit{border-color:rgba(45,212,191,0.25);box-shadow:0 0 24px rgba(45,212,191,0.1);transform:translateY(-2px);}
+.stat-icon{font-size:24px;margin-bottom:10px;display:block;}
+.stat-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:var(--soft);margin-bottom:6px;}
+.stat-value{font-size:28px;font-weight:900;letter-spacing:-1px;color:var(--teal);line-height:1;word-break:break-all;}
+.stat-value.purple{color:var(--purple);}
+.stat-value.orange{color:var(--orange);}
+.stat-sub{font-size:11px;font-weight:600;color:rgba(148,163,184,0.6);margin-top:6px;}
+.chart-wrap{position:relative;height:280px;}
+.chart-wrap.tall{height:340px;}
+.dt{width:100%;border-collapse:collapse;}
+.dt th{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:var(--soft);padding:8px 14px;text-align:left;border-bottom:1px solid var(--border);}
+.dt th:not(:first-child){text-align:right;}
+.dt td{padding:11px 14px;font-size:13px;font-weight:600;border-bottom:1px solid rgba(255,255,255,0.04);}
+.dt td:not(:first-child){text-align:right;}
+.dt tr:last-child td{border-bottom:none;}
+.dt tr:hover td{background:rgba(255,255,255,0.02);}
+.dt td:first-child{color:var(--soft);font-weight:700;}
+.dt td.teal{color:var(--teal);}
+.dt td.grow{color:var(--safe);font-weight:800;}
+.dt td.purple{color:var(--purple);}
+.table-scroll{max-height:320px;overflow-y:auto;}
+.table-scroll::-webkit-scrollbar{width:4px;}
+.table-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px;}
+.compare-controls{display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap;}
+.compare-select-wrap{position:relative;flex:1;min-width:180px;}
+.tags-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.metric-tag{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:20px;font-size:11px;font-weight:800;border:1px solid currentColor;cursor:pointer;transition:all .2s;opacity:0.5;user-select:none;}
+.metric-tag.active{opacity:1;transform:translateY(-1px);}
+.metric-tag:hover{opacity:0.85;}
+.ph{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--soft);font-size:12px;font-weight:600;gap:12px;text-align:center;opacity:.5;min-height:200px;}
+.ph-icon{width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;}
+.banner{display:none;margin-top:22px;border-radius:var(--r);padding:22px 28px;align-items:center;gap:20px;border:1px solid var(--border);background:var(--card);box-shadow:0 4px 28px rgba(0,0,0,0.25);animation:slideUp .45s cubic-bezier(.34,1.56,.64,1);}
+.banner.show{display:flex;}
+@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.b-icon-wrap{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;background:rgba(255,255,255,0.06);}
+.b-title{font-size:17px;font-weight:900;margin-bottom:5px;}
+.b-desc{font-size:13px;font-weight:500;color:var(--soft);line-height:1.65;max-width:700px;}
+.formula-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:16px 20px;margin-bottom:18px;font-size:15px;font-weight:700;color:var(--teal);text-align:center;letter-spacing:0.3px;}
+.formula-box .sub{color:var(--soft);font-size:11px;font-weight:600;margin-top:5px;display:block;font-style:italic;}
+@media(max-width:960px){main{padding:20px;}.top-grid,.bottom-grid{grid-template-columns:1fr;}.stats-row{grid-template-columns:1fr;}header{padding:14px 20px;flex-wrap:wrap;}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-pill">CI</div>
+  <div class="header-title">Compound <span>Interest</span> Calculator</div>
+  <div class="api-status"><span class="status-dot" id="status-dot"></span><span id="status-text">Connecting...</span></div>
+  <div class="header-sub">Smart Money Growth Tool</div>
+</header>
+<main>
+  <div class="top-grid">
+    <div class="card">
+      <div class="glow-orb"></div>
+      <div class="section-title"><span class="dot"></span>Investment Parameters</div>
+      <div class="formula-box">
+        A = P(1 + r/n)<sup>nt</sup> + PMT &times; [((1+r/n)<sup>nt</sup>&minus;1) / (r/n)]
+        <span class="sub">P = Principal &bull; r = Annual Rate &bull; n = Compounding frequency &bull; t = Years &bull; PMT = Monthly contribution</span>
+      </div>
+      <div class="form-group">
+        <label>Principal Amount ($)</label>
+        <input type="number" id="principal" placeholder="e.g. 10,000" min="0" step="100" value="10000">
+      </div>
+      <div class="form-group">
+        <label>Annual Interest Rate (%)</label>
+        <input type="number" id="rate" placeholder="e.g. 8.5" min="0" step="0.1" value="8.5">
+      </div>
+      <div class="form-group">
+        <label>Investment Period (Years)</label>
+        <input type="number" id="years" placeholder="e.g. 10" min="1" max="50" step="1" value="10">
+      </div>
+      <div class="sep">Compounding &amp; Contributions</div>
+      <div class="form-group">
+        <label>Compounding Frequency</label>
+        <div style="position:relative">
+          <select id="compound">
+            <option value="1">Annually (1x/year)</option>
+            <option value="2">Semi-Annually (2x/year)</option>
+            <option value="4">Quarterly (4x/year)</option>
+            <option value="12" selected>Monthly (12x/year)</option>
+            <option value="52">Weekly (52x/year)</option>
+            <option value="365">Daily (365x/year)</option>
+          </select>
+          <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--soft);pointer-events:none">&#9660;</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Monthly Contribution ($) <span style="color:var(--soft);font-weight:600">(optional)</span></label>
+        <input type="number" id="monthly" placeholder="e.g. 500" min="0" step="50" value="0">
+        <div class="hint">&#128176; Regular deposit added each month</div>
+      </div>
+      <button class="btn" onclick="calculate()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        Calculate Growth
+      </button>
+    </div>
+    <div class="card">
+      <div class="glow-orb" style="background:radial-gradient(circle,rgba(167,139,250,0.08) 0%,transparent 70%)"></div>
+      <div class="section-title"><span class="dot"></span>Growth Summary</div>
+      <div class="stats-row">
+        <div class="stat-card teal-top" id="sc-final">
+          <span class="stat-icon">&#127974;</span>
+          <div class="stat-label">Final Balance</div>
+          <div class="stat-value" id="sv-final">—</div>
+          <div class="stat-sub" id="ss-final">Enter values to calculate</div>
+        </div>
+        <div class="stat-card purple-top" id="sc-interest">
+          <span class="stat-icon">&#128200;</span>
+          <div class="stat-label">Interest Earned</div>
+          <div class="stat-value purple" id="sv-interest">—</div>
+          <div class="stat-sub" id="ss-interest">Total compound gains</div>
+        </div>
+        <div class="stat-card orange-top" id="sc-total">
+          <span class="stat-icon">&#128181;</span>
+          <div class="stat-label">Total Invested</div>
+          <div class="stat-value orange" id="sv-invested">—</div>
+          <div class="stat-sub" id="ss-invested">Principal + contributions</div>
+        </div>
+      </div>
+      <div style="margin-top:22px;">
+        <div class="section-title" style="margin-bottom:14px;"><span class="dot"></span>Principal vs Interest Breakdown</div>
+        <div class="chart-wrap" style="height:240px;">
+          <canvas id="donutChart"></canvas>
+          <div class="ph" id="donut-ph">
+            <div class="ph-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+            Calculate to see the breakdown
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:22px;">
+    <div class="section-title"><span class="dot"></span>Year-by-Year Growth Curve</div>
+    <div class="chart-wrap tall">
+      <canvas id="lineChart"></canvas>
+      <div class="ph" id="line-ph">
+        <div class="ph-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        Your growth curve will appear here after calculation
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-grid">
+    <div class="card">
+      <div class="section-title"><span class="dot"></span>Year-by-Year Breakdown</div>
+      <div class="ph" id="tbl-ph">
+        <div class="ph-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18"/></svg></div>
+        Awaiting your first calculation
+      </div>
+      <div class="table-scroll" id="tbl-wrap" style="display:none;">
+        <table class="dt">
+          <thead><tr><th>Year</th><th>Balance</th><th>Invested</th><th>Interest</th><th>Growth</th></tr></thead>
+          <tbody id="tbl-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title"><span class="dot"></span>Balance Composition per Year</div>
+      <div class="chart-wrap tall">
+        <canvas id="barChart"></canvas>
+        <div class="ph" id="bar-ph">
+          <div class="ph-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg></div>
+          Bar chart will render after calculation
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:22px;">
+    <div class="glow-orb" style="background:radial-gradient(circle,rgba(251,191,36,0.07) 0%,transparent 70%);left:-40px;bottom:-40px;top:auto;right:auto;"></div>
+    <div class="section-title"><span class="dot"></span>Compare With Market Metrics</div>
+    <div id="metrics-loading" style="text-align:center;color:var(--soft);font-size:13px;font-weight:600;padding:20px 0;">&#9203; Loading market rates...</div>
+    <div id="metrics-panel" style="display:none;">
+      <div class="tags-row" id="metric-tags"></div>
+      <div class="compare-controls">
+        <div class="compare-select-wrap">
+          <select id="compare-select">
+            <option value="">— Select a metric to compare —</option>
+          </select>
+          <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--soft);pointer-events:none">&#9660;</span>
+        </div>
+        <button class="btn btn-compare" onclick="addComparison()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add to Chart
+        </button>
+        <button class="btn btn-ghost" onclick="clearComparisons()">Clear All</button>
+      </div>
+      <div class="chart-wrap tall">
+        <canvas id="compareChart"></canvas>
+        <div class="ph" id="compare-ph">
+          <div class="ph-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+          First calculate your investment, then add metrics to compare
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="banner" id="banner">
+    <div class="b-icon-wrap" id="b-icon">&#128161;</div>
+    <div>
+      <div class="b-title" id="b-title">Investment Insight</div>
+      <div class="b-desc" id="b-desc">—</div>
+    </div>
+  </div>
+</main>
+<script>
+
+
+function store_login_cookies() {
+    const COOKIE_NAME = "lastLogin";
+    const REDIRECT_PAGE = "auth.html";
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+    function getCookie(name) {
+        const cookies = document.cookie.split("; ");
+        for (let cookie of cookies) {
+            const [key, value] = cookie.split("=");
+            if (key === name) {
+                return decodeURIComponent(value);
+            }
+        }
+        return null;
+    }
+
+    function setCookie(name, value, days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        const expires = "expires=" + date.toUTCString();
+        document.cookie = `${name}=${encodeURIComponent(value)}; ${expires}; path=/`;
+    }
+
+    const existingLogin = getCookie(COOKIE_NAME);
+
+    if (existingLogin) {
+        const lastLoginDate = new Date(existingLogin);
+        const now = new Date();
+
+        if (now - lastLoginDate > SEVEN_DAYS_MS) {
+            window.location.href = "auth.html";
+            return;
+        }
+    }
+
+    // Update cookie with today's date
+    setCookie(COOKIE_NAME, new Date().toISOString(), 7);
+}
+
+// Run automatically when page loads
+window.addEventListener("load", store_login_cookies);
+
+
+const FALLBACK_RATES={central_bank_rate:{label:"Central Bank Rate",rate:13.0,color:"#f87171",emoji:"🏛️"},nse_growth_rate:{label:"NSE Growth Rate",rate:8.5,color:"#fbbf24",emoji:"📊"},money_market_rate:{label:"Money Market Fund",rate:14.2,color:"#34d399",emoji:"💹"},sp500_growth_rate:{label:"S&P 500",rate:10.7,color:"#a78bfa",emoji:"🇺🇸"},bitcoin_growth_rate:{label:"Bitcoin (BTC)",rate:62.0,color:"#fb923c",emoji:"₿"}};
+let marketRates=null,chartInstances={},comparisonSets={},calcResults=null;
+
+async function fetchRates(){
+  try{
+    const res=await fetch("http://localhost:6000/rates",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({request:"annual_rates"}),signal:AbortSignal.timeout(3000)});
+    if(!res.ok)throw new Error("bad");
+    marketRates=await res.json();
+    setStatus(true);
+  }catch(e){marketRates=FALLBACK_RATES;setStatus(false);}
+  buildMetricsUI();
+}
+
+function setStatus(live){
+  document.getElementById('status-dot').className='status-dot '+(live?'live':'fallback');
+  document.getElementById('status-text').textContent=live?'Live API':'Demo Data';
+}
+
+function buildMetricsUI(){
+  document.getElementById('metrics-loading').style.display='none';
+  document.getElementById('metrics-panel').style.display='block';
+  const sel=document.getElementById('compare-select');
+  const tags=document.getElementById('metric-tags');
+  sel.innerHTML='<option value="">— Select a metric to compare —</option>';
+  tags.innerHTML='';
+  Object.entries(marketRates).forEach(([key,m])=>{
+    const opt=document.createElement('option');
+    opt.value=key;
+    opt.textContent=m.emoji+' '+m.label+' — '+m.rate+'% p.a.';
+    sel.appendChild(opt);
+    const tag=document.createElement('div');
+    tag.className='metric-tag';
+    tag.style.color=m.color;
+    tag.style.borderColor=m.color+'55';
+    tag.style.background=m.color+'15';
+    tag.dataset.key=key;
+    tag.innerHTML=m.emoji+' '+m.label+' <strong>'+m.rate+'%</strong>';
+    tag.onclick=()=>{document.getElementById('compare-select').value=key;};
+    tags.appendChild(tag);
+  });
+}
+
+function compoundClean(principal,annualRate,years,n,monthly){
+  const r=annualRate/100;
+  const rows=[];
+  for(let y=1;y<=years;y++){
+    const t=y;
+    const base=principal*Math.pow(1+r/n,n*t);
+    let contribFV=0;
+    if(monthly>0){const rm=r/12;const months=t*12;contribFV=monthly*((Math.pow(1+rm,months)-1)/rm);}
+    const balance=base+contribFV;
+    const totalInvested=principal+monthly*12*y;
+    const interest=balance-totalInvested;
+    const prevBalance=y>1?rows[y-2].balance:principal;
+    const growth=prevBalance>0?((balance-prevBalance)/prevBalance)*100:0;
+    rows.push({year:y,balance,totalInvested,interest,growth});
+  }
+  return rows;
+}
+
+function fmt(n){
+  if(isNaN(n)||n===undefined)return'—';
+  if(n>=1e9)return'$'+(n/1e9).toFixed(2)+'B';
+  if(n>=1e6)return'$'+(n/1e6).toFixed(2)+'M';
+  return'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function fmtK(n){
+  if(n>=1e6)return(n/1e6).toFixed(2)+'M';
+  if(n>=1e3)return(n/1e3).toFixed(1)+'K';
+  return n.toFixed(2);
+}
+
+function destroy(key){if(chartInstances[key]){chartInstances[key].destroy();delete chartInstances[key];}}
+
+const TT={backgroundColor:'#1a2035',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,titleFont:{family:'Nunito',size:13,weight:'800'},bodyFont:{family:'Nunito',size:12,weight:'600'},padding:12,cornerRadius:12};
+
+function calculate(){
+  const principal=parseFloat(document.getElementById('principal').value)||0;
+  const rate=parseFloat(document.getElementById('rate').value)||0;
+  const years=parseInt(document.getElementById('years').value)||0;
+  const n=parseInt(document.getElementById('compound').value)||12;
+  const monthly=parseFloat(document.getElementById('monthly').value)||0;
+  if(!principal||!rate||!years){alert('Please fill in Principal, Rate, and Years.');return;}
+  const rows=compoundClean(principal,rate,years,n,monthly);
+  calcResults={rows,principal,rate,years,n,monthly};
+  const fr=rows[rows.length-1];
+  const totalInvested=fr.totalInvested;
+  const interest=fr.interest;
+  const finalBal=fr.balance;
+  const multiplier=finalBal/totalInvested;
+  ['sc-final','sc-interest','sc-total'].forEach(id=>document.getElementById(id).classList.add('lit'));
+  document.getElementById('sv-final').textContent=fmt(finalBal);
+  document.getElementById('ss-final').textContent=multiplier.toFixed(2)+'x your total investment';
+  document.getElementById('sv-interest').textContent=fmt(interest);
+  document.getElementById('ss-interest').textContent=((interest/totalInvested)*100).toFixed(1)+'% return on investment';
+  document.getElementById('sv-invested').textContent=fmt(totalInvested);
+  document.getElementById('ss-invested').textContent=monthly>0?'Principal + monthly contributions':'One-time principal only';
+  drawDonut(totalInvested,interest);
+  drawLine(rows);
+  drawBar(rows);
+  drawTable(rows);
+  drawBanner(finalBal,totalInvested,interest,multiplier,rate,years);
+  if(Object.keys(comparisonSets).length>0){
+    Object.keys(comparisonSets).forEach(key=>{
+      const m=marketRates[key];
+      const cr=compoundClean(principal,m.rate,years,n,monthly);
+      comparisonSets[key].data=cr.map(r=>r.balance);
+    });
+    drawCompare();
+  }
+}
+
+function drawDonut(invested,interest){
+  document.getElementById('donut-ph').style.display='none';
+  destroy('donut');
+  const ctx=document.getElementById('donutChart').getContext('2d');
+  chartInstances.donut=new Chart(ctx,{type:'doughnut',data:{labels:['Principal & Contributions','Interest Earned'],datasets:[{data:[invested,interest],backgroundColor:['rgba(45,212,191,0.75)','rgba(167,139,250,0.75)'],borderColor:['#2dd4bf','#a78bfa'],borderWidth:2,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{position:'bottom',labels:{color:'#94a3b8',font:{family:'Nunito',size:12,weight:'700'},padding:16,boxWidth:12,boxHeight:12}},tooltip:{...TT,callbacks:{label:c=>'  '+c.label+': '+fmt(c.parsed)}}}}});
+}
+
+function drawLine(rows){
+  document.getElementById('line-ph').style.display='none';
+  destroy('line');
+  const ctx=document.getElementById('lineChart').getContext('2d');
+  const g=ctx.createLinearGradient(0,0,0,340);g.addColorStop(0,'rgba(45,212,191,0.35)');g.addColorStop(1,'rgba(45,212,191,0.01)');
+  const gp=ctx.createLinearGradient(0,0,0,340);gp.addColorStop(0,'rgba(167,139,250,0.25)');gp.addColorStop(1,'rgba(167,139,250,0.01)');
+  chartInstances.line=new Chart(ctx,{type:'line',data:{labels:rows.map(r=>'Year '+r.year),datasets:[{label:'Total Balance',data:rows.map(r=>r.balance),borderColor:'#2dd4bf',backgroundColor:g,borderWidth:2.5,fill:true,tension:0.4,pointBackgroundColor:'#2dd4bf',pointRadius:4,pointHoverRadius:7},{label:'Total Invested',data:rows.map(r=>r.totalInvested),borderColor:'#a78bfa',backgroundColor:gp,borderWidth:2,fill:true,tension:0.4,borderDash:[5,4],pointBackgroundColor:'#a78bfa',pointRadius:3,pointHoverRadius:6},{label:'Interest Earned',data:rows.map(r=>r.interest),borderColor:'#fbbf24',backgroundColor:'transparent',borderWidth:2,fill:false,tension:0.4,pointBackgroundColor:'#fbbf24',pointRadius:3,pointHoverRadius:6}]},options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},plugins:{legend:{labels:{color:'#94a3b8',font:{family:'Nunito',size:12,weight:'700'},padding:16}},tooltip:{...TT,callbacks:{label:c=>'  '+c.dataset.label+': '+fmt(c.parsed.y)}}},scales:{x:{ticks:{color:'#94a3b8',font:{family:'Nunito',size:11,weight:'700'}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#94a3b8',font:{family:'Nunito',size:11,weight:'700'},callback:v=>'$'+fmtK(v)},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+}
+
+function drawBar(rows){
+  document.getElementById('bar-ph').style.display='none';
+  destroy('bar');
+  const ctx=document.getElementById('barChart').getContext('2d');
+  const step=rows.length>20?Math.ceil(rows.length/15):1;
+  const filtered=rows.filter((_,i)=>(i+1)%step===0||i===rows.length-1);
+  chartInstances.bar=new Chart(ctx,{type:'bar',data:{labels:filtered.map(r=>'Y'+r.year),datasets:[{label:'Principal & Contributions',data:filtered.map(r=>r.totalInvested),backgroundColor:'rgba(45,212,191,0.6)',borderColor:'#2dd4bf',borderWidth:1.5,borderRadius:{topLeft:0,topRight:0,bottomLeft:6,bottomRight:6},stack:'s'},{label:'Interest Earned',data:filtered.map(r=>r.interest),backgroundColor:'rgba(167,139,250,0.65)',borderColor:'#a78bfa',borderWidth:1.5,borderRadius:{topLeft:6,topRight:6,bottomLeft:0,bottomRight:0},stack:'s'}]},options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},plugins:{legend:{labels:{color:'#94a3b8',font:{family:'Nunito',size:12,weight:'700'},padding:16}},tooltip:{...TT,callbacks:{label:c=>'  '+c.dataset.label+': '+fmt(c.parsed.y)}}},scales:{x:{stacked:true,ticks:{color:'#94a3b8',font:{family:'Nunito',size:10,weight:'700'}},grid:{color:'rgba(255,255,255,0.04)'}},y:{stacked:true,ticks:{color:'#94a3b8',font:{family:'Nunito',size:10,weight:'700'},callback:v=>'$'+fmtK(v)},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+}
+
+function drawTable(rows){
+  document.getElementById('tbl-ph').style.display='none';
+  document.getElementById('tbl-wrap').style.display='block';
+  document.getElementById('tbl-body').innerHTML=rows.map(r=>`<tr><td>Year ${r.year}</td><td class="teal">${fmt(r.balance)}</td><td>${fmt(r.totalInvested)}</td><td class="purple">${fmt(r.interest)}</td><td class="grow">+${r.growth.toFixed(1)}%</td></tr>`).join('');
+}
+
+function drawBanner(finalBal,invested,interest,multiplier,rate,years){
+  const banner=document.getElementById('banner');banner.classList.add('show');
+  const roi=(interest/invested)*100;
+  const extra=multiplier>=5?'🚀 Exceptional compounding effect at work!':multiplier>=2?'✨ Solid long-term wealth building potential.':'💡 Consider extending the time horizon for greater gains.';
+  document.getElementById('b-icon').textContent=multiplier>=3?'🚀':'💡';
+  document.getElementById('b-title').textContent='Your money grows '+multiplier.toFixed(2)+'x in '+years+' years';
+  document.getElementById('b-title').style.color='#2dd4bf';
+  document.getElementById('b-desc').textContent='At '+rate+'% annual interest compounded regularly, your total investment of '+fmt(invested)+' grows to '+fmt(finalBal)+', earning '+fmt(interest)+' in pure compound interest — a '+roi.toFixed(1)+'% total return on invested capital. '+extra;
+  banner.style.borderColor='rgba(45,212,191,0.3)';
+  banner.style.background='linear-gradient(135deg,var(--card) 0%,rgba(45,212,191,0.06) 100%)';
+}
+
+function addComparison(){
+  if(!calcResults){alert('Please calculate your investment first.');return;}
+  const key=document.getElementById('compare-select').value;
+  if(!key){alert('Please select a metric to compare.');return;}
+  if(comparisonSets[key]){alert('This metric is already on the chart.');return;}
+  const m=marketRates[key];
+  const {principal,years,n,monthly}=calcResults;
+  const cr=compoundClean(principal,m.rate,years,n,monthly);
+  comparisonSets[key]={label:m.emoji+' '+m.label+' ('+m.rate+'%)',rate:m.rate,color:m.color,data:cr.map(r=>r.balance)};
+  drawCompare();
+  document.querySelectorAll('.metric-tag').forEach(t=>{if(t.dataset.key===key)t.classList.add('active');});
+}
+
+function clearComparisons(){
+  comparisonSets={};
+  document.querySelectorAll('.metric-tag').forEach(t=>t.classList.remove('active'));
+  document.getElementById('compare-ph').style.display='flex';
+  destroy('compare');
+}
+
+function drawCompare(){
+  if(!calcResults)return;
+  document.getElementById('compare-ph').style.display='none';
+  destroy('compare');
+  const{rows,rate}=calcResults;
+  const labels=rows.map(r=>'Year '+r.year);
+  const datasets=[{label:'🎯 Your Investment ('+rate+'%)',data:rows.map(r=>r.balance),borderColor:'#2dd4bf',backgroundColor:'rgba(45,212,191,0.08)',borderWidth:3,fill:false,tension:0.4,pointRadius:3,pointHoverRadius:7}];
+  Object.values(comparisonSets).forEach(cs=>{
+    datasets.push({label:cs.label,data:cs.data,borderColor:cs.color,backgroundColor:cs.color+'10',borderWidth:2.5,fill:false,tension:0.4,borderDash:[6,3],pointRadius:3,pointHoverRadius:6});
+  });
+  const ctx=document.getElementById('compareChart').getContext('2d');
+  chartInstances.compare=new Chart(ctx,{type:'line',data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},plugins:{legend:{labels:{color:'#94a3b8',font:{family:'Nunito',size:12,weight:'700'},padding:14}},tooltip:{...TT,callbacks:{label:c=>'  '+c.dataset.label+': '+fmt(c.parsed.y)}}},scales:{x:{ticks:{color:'#94a3b8',font:{family:'Nunito',size:11,weight:'700'}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#94a3b8',font:{family:'Nunito',size:11,weight:'700'},callback:v=>'$'+fmtK(v)},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+}
+
+fetchRates();
+</script>
+</body>
+</html>

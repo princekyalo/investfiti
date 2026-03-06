@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NSE Sector Tables</title>
+
+<style>
+body{
+    margin:0;
+    background:#0D1117;
+    font-family:Inter,Segoe UI,Arial;
+    color:#E6EDF3;
+}
+
+header{
+    padding:20px 30px;
+    background:#161B22;
+    border-bottom:1px solid #30363d;
+}
+
+header h1{
+    margin:0;
+    font-size:20px;
+    color:#58a6ff;
+}
+
+.container{
+    padding:30px;
+}
+
+.sector-card{
+    margin-bottom:40px;
+    background:#161B22;
+    padding:20px;
+    border-radius:10px;
+    border:1px solid #30363d;
+}
+
+.sector-title{
+    font-size:18px;
+    margin-bottom:15px;
+    color:#58a6ff;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th, td{
+    padding:10px;
+    border-bottom:1px solid #30363d;
+}
+
+th{
+    text-align:left;
+    background:#0D1117;
+}
+
+tr:hover{
+    background:#1f242d;
+}
+
+button{
+    margin-top:15px;
+    padding:8px 14px;
+    border:none;
+    border-radius:6px;
+    background:#238636;
+    color:white;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#2ea043;
+}
+
+/* MODAL */
+.modal{
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.6);
+    justify-content:center;
+    align-items:center;
+}
+
+.modal-content{
+    background:#161B22;
+    padding:25px;
+    width:400px;
+    border-radius:10px;
+    border:1px solid #30363d;
+}
+
+.modal-content h3{
+    margin-top:0;
+    color:#58a6ff;
+}
+
+.close-btn{
+    margin-top:15px;
+    padding:6px 12px;
+    background:#da3633;
+    border:none;
+    border-radius:6px;
+    color:white;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Nairobi Securities Exchange — Sector Overview</h1>
+</header>
+
+<div class="container" id="sectorContainer"></div>
+
+<!-- Modal -->
+<div class="modal" id="modal">
+    <div class="modal-content">
+        <h3 id="modalTitle"></h3>
+        <p id="modalDescription"></p>
+        <button class="close-btn" onclick="closeModal()">Close</button>
+    </div>
+</div>
+
+<script>
+
+  function store_login_cookies() {
+    const COOKIE_NAME = "lastLogin";
+    const REDIRECT_PAGE = "auth.html";
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+    function getCookie(name) {
+        const cookies = document.cookie.split("; ");
+        for (let cookie of cookies) {
+            const [key, value] = cookie.split("=");
+            if (key === name) {
+                return decodeURIComponent(value);
+            }
+        }
+        return null;
+    }
+
+    function setCookie(name, value, days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        const expires = "expires=" + date.toUTCString();
+        document.cookie = `${name}=${encodeURIComponent(value)}; ${expires}; path=/`;
+    }
+
+    const existingLogin = getCookie(COOKIE_NAME);
+
+    if (existingLogin) {
+        const lastLoginDate = new Date(existingLogin);
+        const now = new Date();
+
+        if (now - lastLoginDate > SEVEN_DAYS_MS) {
+            window.location.href = "auth.html";
+            return;
+        }
+    }
+
+    // Update cookie with today's date
+    setCookie(COOKIE_NAME, new Date().toISOString(), 7);
+}
+
+// Run automatically when page loads
+window.addEventListener("load", store_login_cookies);
+
+
+
+/* ----------------------------
+   JSON DATA (Companies + Descriptions)
+---------------------------- */
+
+const data = {
+  "exchange": "Nairobi Securities Exchange",
+  "last_updated": "2026",
+  "categories": [
+
+    {
+      "sector": "Agriculture",
+      "companies": [
+        "Eaagads Ltd",
+        "Kapchorua Tea Kenya Plc",
+        "Kakuzi Plc",
+        "Limuru Tea Plc",
+        "Sasini Plc",
+        "Williamson Tea Kenya Plc"
+      ]
+    },
+
+    {
+      "sector": "Automobiles & Accessories",
+      "companies": [
+        "Car & General (Kenya) Plc"
+      ]
+    },
+
+    {
+      "sector": "Banking",
+      "companies": [
+        "ABSA Bank Kenya Plc",
+        "Bank of Kigali Plc",
+        "Diamond Trust Bank Kenya Ltd",
+        "Equity Group Holdings Plc",
+        "HF Group Plc",
+        "I&M Holdings Plc",
+        "KCB Group Plc",
+        "NCBA Group Plc",
+        "Stanbic Holdings Plc",
+        "Standard Chartered Bank Kenya Ltd"
+      ]
+    },
+
+    {
+      "sector": "Commercial & Services",
+      "companies": [
+        "Express Kenya Plc",
+        "Home Afrika Ltd",
+        "Kenya Airways Plc",
+        "Longhorn Publishers Plc",
+        "Nation Media Group Plc",
+        "Sameer Africa Plc",
+        "Standard Group Plc",
+        "TPS Eastern Africa Plc (Serena)"
+      ]
+    },
+
+    {
+      "sector": "Construction & Allied",
+      "companies": [
+        "Athi River Mining Plc"
+      ]
+    },
+
+    {
+      "sector": "Energy & Petroleum",
+      "companies": [
+        "KenGen Plc",
+        "Kenya Power & Lighting Company Plc",
+        "TotalEnergies Marketing Kenya Plc",
+        "Umeme Ltd"
+      ]
+    },
+
+    {
+      "sector": "Insurance",
+      "companies": [
+        "Britam Holdings Plc",
+        "CIC Insurance Group Plc",
+        "Jubilee Holdings Ltd",
+        "Kenya Re-Insurance Corporation Ltd",
+        "Liberty Kenya Holdings Plc",
+        "Sanlam Kenya Plc"
+      ]
+    },
+
+    {
+      "sector": "Investment",
+      "companies": [
+        "Centum Investment Company Plc",
+        "Home Afrika Ltd",
+        "Nairobi Business Ventures Plc",
+        "Trans-Century Plc"
+      ]
+    },
+
+    {
+      "sector": "Investment Services",
+      "companies": [
+        "Nairobi Securities Exchange Plc"
+      ]
+    },
+
+    {
+      "sector": "Manufacturing & Allied",
+      "companies": [
+        "Bamburi Cement Plc",
+        "BAT Kenya Plc",
+        "BOC Kenya Plc",
+        "British American Tobacco Kenya Plc",
+        "Crown Paints Kenya Plc",
+        "East African Breweries Plc",
+        "Flame Tree Group Holdings Plc",
+        "Kenya Orchards Ltd",
+        "Mumias Sugar Company Plc",
+        "Unga Group Plc"
+      ]
+    },
+
+    {
+      "sector": "Real Estate Investment Trust (REIT)",
+      "companies": [
+        "ILAM Fahari I-REIT",
+        "Acorn Holdings Plc (I-REIT)",
+        "Acorn Holdings Plc (D-REIT)"
+      ]
+    },
+
+    {
+      "sector": "Telecommunications & Technology",
+      "companies": [
+        "Safaricom Plc"
+      ]
+    }
+  ]
+};
+
+/* ----------------------------
+   RENDER SECTOR TABLES
+---------------------------- */
+
+const container = document.getElementById("sectorContainer");
+
+data.categories.forEach(category => {
+
+    const card = document.createElement("div");
+    card.className = "sector-card";
+
+    card.innerHTML = `
+        <div class="sector-title">${category.sector}</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Sector</th>
+                    <th>Company</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${category.companies.map(company => `
+                    <tr>
+                        <td>${category.sector}</td>
+                        <td>${company}</td>
+                    </tr>
+                `).join("")}
+            </tbody>
+        </table>
+        <button onclick="showDescription('${category.sector}')">Description</button>
+    `;
+
+    container.appendChild(card);
+});
+
+/* ----------------------------
+   MODAL FUNCTIONS
+---------------------------- */
+
+function showDescription(sectorName){
+    const category = data.categories.find(c => c.sector === sectorName);
+    
+
+    const descriptions = [
+    {
+      "sector": "Agriculture",
+      "description": "Firms engaged in the cultivation, processing, and export of high-value cash crops, primarily tea, coffee, and horticultural products. These companies are significant foreign exchange earners, with their profitability closely linked to global commodity prices and currency fluctuations, particularly the strength of the Kenyan Shilling against major global currencies. Key players include Kakuzi Plc, Sasini Plc, and various tea producers like Williamson Tea."
+    },
+    {
+      "sector": "Automobiles & Accessories",
+      "description": "This sector is primarily represented by companies involved in the distribution of automobiles, engineering equipment, and related accessories for the automotive, agricultural, and construction industries. Car & General (Kenya) Plc is the principal listed entity in this category, serving as a key supplier of parts and machinery across the region."
+    },
+    {
+      "sector": "Banking",
+      "description": "A cornerstone of the NSE, this sector includes major commercial banks offering a full range of financial services including retail, corporate, and investment banking. It is one of the market's most liquid segments, with dominant players including Equity Group Holdings, KCB Group, and ABSA Bank Kenya. These institutions together constitute a substantial portion of the NSE's total market capitalization and are key drivers of economic activity."
+    },
+    {
+      "sector": "Commercial & Services",
+      "description": "A diverse sector encompassing companies that provide a wide array of services, including Kenya's flagship airline (Kenya Airways), media houses (Nation Media Group, Standard Group), publishers (Longhorn Publishers), logistics providers (Express Kenya), and hospitality groups (TPS Eastern Africa/Serena). These firms are integral to Kenya's economic activity in tourism, information, and transportation sectors."
+    },
+    {
+      "sector": "Construction & Allied",
+      "description": "Comprises companies vital to infrastructure development and building, primarily through the manufacture and supply of construction materials like cement. While the sector has seen significant consolidation, players like Athi River Mining (ARM) have been key participants in supplying materials for Kenya's growing infrastructure and real estate projects."
+    },
+    {
+      "sector": "Energy & Petroleum",
+      "description": "This sector includes companies involved in electricity generation (KenGen), transmission and distribution (Kenya Power), and the importation and distribution of petroleum products (TotalEnergies). These firms are essential to Kenya's industrial productivity and household energy needs, though the sector currently has limited listed representation despite significant potential for growth in renewable energy."
+    },
+    {
+      "sector": "Insurance",
+      "description": "Comprises firms offering life and general insurance, reinsurance, and investment products. Major players include Britam, Jubilee Holdings, and Kenya Re-Insurance Corporation, with some cross-listed on other regional exchanges. The financial performance of these companies is closely tied to their underwriting discipline, investment returns, and credit management procedures."
+    },
+    {
+      "sector": "Investment",
+      "description": "These are companies whose primary business is making equity investments in a diverse portfolio of unlisted and listed companies across various sectors of the economy. They provide investors with diversified exposure to different industries. Centum Investment Company Plc is the most prominent firm in this category, with others operating as key investment vehicles for long-term capital growth."
+    },
+    {
+      "sector": "Investment Services",
+      "description": "This sector is uniquely represented by the Nairobi Securities Exchange Plc itself, which demutualized and self-listed in 2014. As the principal securities exchange in Kenya, it provides the platform for trading a multi-asset class of securities, including equities, bonds, derivatives, and REITs, playing a vital role in capital formation and economic growth."
+    },
+    {
+      "sector": "Manufacturing & Allied",
+      "description": "A diverse industrial sector including cement production (Bamburi), beverage manufacturing (EABL), tobacco (BAT), industrial gases (BOC), and flour milling (Unga). These firms are significant contributors to the economy and employment. Research indicates that corporate governance, particularly board independence and operational efficiency, are major predictors of profitability for firms in this sector."
+    },
+    {
+      "sector": "Real Estate Investment Trust (REIT)",
+      "description": "REITs are companies that own, operate, or finance income-generating real estate, offering investors a way to access property markets without directly owning assets. The NSE hosts both Income-REITs (I-REITs) and Development-REITs (D-REITs), with ILAM Fahari I-REIT being the first to list in 2015, providing exposure to diversified commercial property portfolios."
+    },
+    {
+      "sector": "Telecommunications & Technology",
+      "description": "Currently dominated by Safaricom Plc, this sector is a heavyweight on the NSE, with the company alone accounting for a substantial portion (approximately 35%) of the entire bourse's market capitalization. This reflects its dominant market position in mobile telephony, financial services (M-Pesa), and data connectivity, as well as strong investor confidence in its continued innovation and growth."
+    }
+  ];
+    
+    const description=descriptions.find(desc=> desc.sector===sectorName)
+    console.log(`Description is: ${description.description}`)
+
+    document.getElementById("modalDescription").innerText = description.description;
+    document.getElementById("modal").style.display = "flex";
+}
+
+function closeModal(){
+    document.getElementById("modal").style.display = "none";
+}
+
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

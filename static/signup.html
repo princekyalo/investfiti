@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Sign Up</title>
+
+<style>
+
+body{
+font-family:Arial, Helvetica, sans-serif;
+background:linear-gradient(135deg,#0f172a,#1e293b);
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+margin:0;
+}
+
+.container{
+background:white;
+padding:40px;
+border-radius:12px;
+width:420px;
+box-shadow:0 10px 30px rgba(0,0,0,0.2);
+}
+
+h2{
+text-align:center;
+margin-bottom:25px;
+}
+
+form{
+display:flex;
+flex-direction:column;
+gap:15px;
+}
+
+.row{
+display:flex;
+gap:10px;
+}
+
+.row input{
+flex:1;
+}
+
+input{
+padding:12px;
+border-radius:8px;
+border:1px solid #ccc;
+font-size:14px;
+}
+
+input:invalid{
+border-color:#ff4d4d;
+}
+
+input:valid{
+border-color:#22c55e;
+}
+
+button{
+padding:12px;
+border:none;
+border-radius:8px;
+background:#2563eb;
+color:white;
+font-size:16px;
+cursor:pointer;
+transition:0.3s;
+}
+
+button:hover{
+background:#1e40af;
+}
+
+.error{
+color:red;
+font-size:14px;
+text-align:center;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Create Account</h2>
+
+<div id="formError" class="error"></div>
+
+<form id="signupForm">
+
+<div class="row">
+
+<input
+id="firstName"
+type="text"
+placeholder="First Name"
+required
+pattern="[A-Za-z]{2,}"
+title="Enter a valid first name"
+/>
+
+<input
+id="lastName"
+type="text"
+placeholder="Last Name"
+required
+pattern="[A-Za-z]{2,}"
+title="Enter a valid last name"
+/>
+
+</div>
+
+<input
+id="email"
+type="email"
+placeholder="Email Address"
+required
+/>
+
+<input
+id="phone"
+type="tel"
+placeholder="Phone Number"
+required
+pattern="[0-9+]{7,15}"
+title="Enter a valid phone number"
+/>
+
+<input
+id="password"
+type="password"
+placeholder="Password"
+required
+minlength="6"
+/>
+
+<input
+id="confirmPassword"
+type="password"
+placeholder="Confirm Password"
+required
+/>
+
+<button type="submit">Sign Up</button>
+
+</form>
+
+</div>
+
+<script type="module" src="scripts/firebase_signup.js"></script>
+
+
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyBrBvOZlmRWe7dawl-RKYxDtPNvRvagxzo",
+    authDomain: "trading-agent-8dd25.firebaseapp.com",
+    projectId: "trading-agent-8dd25",
+    storageBucket: "trading-agent-8dd25.firebasestorage.app",
+    messagingSenderId: "779879009062",
+    appId: "1:779879009062:web:60836b1d9c4ee37b6c0fe7",
+    measurementId: "G-F3B9GM6WYN"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
+</body>
+
+</html>

@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trade Risk Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+  :root{
+  --bg1:#0f2027;
+  --bg2:#203a43;
+  --bg3:#2c5364;
+
+  --glass:rgba(255,255,255,0.06);
+  --glass-border:rgba(255,255,255,0.15);
+
+  --accent:#00f5ff;
+  --green:#2aff9b;
+  --red:#ff5c7a;
+  --yellow:#ffc857;
+  --purple:#b388ff;
+
+  --text:#f1f5f9;
+  --muted:#94a3b8;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:"Segoe UI",system-ui,sans-serif;
+  color:var(--text);
+  background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3));
+  min-height:100vh;
+}
+
+/* NAVBAR */
+
+nav{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:18px 40px;
+  backdrop-filter:blur(12px);
+  background:rgba(0,0,0,0.35);
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+
+.logo{
+  font-size:20px;
+  font-weight:700;
+  letter-spacing:1px;
+  color:var(--accent);
+}
+
+nav ul{
+  list-style:none;
+  display:flex;
+  gap:28px;
+  margin:0;
+  padding:0;
+}
+
+nav li{
+  color:var(--muted);
+  cursor:pointer;
+  font-weight:500;
+  transition:0.25s;
+}
+
+nav li:hover{
+  color:var(--accent);
+  transform:translateY(-2px);
+}
+
+/* LAYOUT */
+
+.container{
+  display:grid;
+  grid-template-columns:340px 1fr;
+  gap:25px;
+  padding:30px;
+}
+
+/* GLASS CARD */
+
+.card{
+  background:var(--glass);
+  backdrop-filter:blur(16px);
+  border:1px solid var(--glass-border);
+  border-radius:14px;
+  padding:22px;
+  box-shadow:0 10px 35px rgba(0,0,0,0.35);
+}
+
+.card:hover{
+  box-shadow:0 15px 45px rgba(0,0,0,0.45);
+}
+
+h3{
+  margin-top:0;
+  font-weight:600;
+  letter-spacing:.5px;
+  color:var(--accent);
+}
+
+/* INPUTS */
+
+input,select{
+  width:100%;
+  padding:10px;
+  margin-bottom:12px;
+  background:rgba(0,0,0,0.35);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:8px;
+  color:var(--text);
+  outline:none;
+}
+
+input:focus,select:focus{
+  border:1px solid var(--accent);
+}
+
+/* BUTTON */
+
+button{
+  width:100%;
+  padding:11px;
+  border:none;
+  border-radius:10px;
+  font-weight:600;
+  letter-spacing:.5px;
+  cursor:pointer;
+
+  background:linear-gradient(135deg,#00f5ff,#2aff9b);
+  color:#000;
+
+  transition:0.25s;
+}
+
+button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 6px 18px rgba(0,255,200,0.4);
+}
+
+/* SUMMARY METRICS */
+
+.summary{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:18px;
+  margin-bottom:22px;
+}
+
+.metric{
+  background:var(--glass);
+  border:1px solid var(--glass-border);
+  backdrop-filter:blur(14px);
+  padding:18px;
+  border-radius:12px;
+  text-align:center;
+}
+
+.metric span{
+  font-size:12px;
+  color:var(--muted);
+  display:block;
+  margin-bottom:4px;
+}
+
+.metric strong{
+  font-size:20px;
+}
+
+/* TRADE VISUAL */
+
+.trade-visual{
+  position:relative;
+  height:150px;
+  background:rgba(0,0,0,0.35);
+  border-radius:12px;
+  margin-bottom:22px;
+  border:1px solid rgba(255,255,255,0.08);
+}
+
+.line{
+  position:absolute;
+  left:0;
+  right:0;
+  height:3px;
+}
+
+.entry{background:var(--accent);}
+.sl{background:var(--red);}
+.tp{background:var(--green);}
+
+/* CHARTS */
+
+.chart-container{
+  background:var(--glass);
+  backdrop-filter:blur(14px);
+  border:1px solid var(--glass-border);
+  border-radius:12px;
+  padding:18px;
+  margin-bottom:22px;
+}
+
+.chart-title{
+  color:var(--yellow);
+  font-weight:600;
+  margin-bottom:10px;
+}
+
+canvas{
+  max-height:260px !important;
+}
+
+/* TABLE */
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+
+th{
+  text-align:left;
+  padding:12px;
+  font-size:13px;
+  background:rgba(0,0,0,0.35);
+  color:var(--accent);
+}
+
+td{
+  padding:12px;
+}
+
+tr:nth-child(even){
+  background:rgba(255,255,255,0.03);
+}
+
+tr:hover{
+  background:rgba(0,255,255,0.08);
+}
+
+/* RESPONSIVE */
+
+@media(max-width:1000px){
+
+  .container{
+    grid-template-columns:1fr;
+  }
+
+  .summary{
+    grid-template-columns:1fr;
+  }
+
+}
+
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">QuantumTrade Risk</div>
+  <ul>
+    <li>Dashboard</li>
+    <li>Portfolio</li>
+    <li>Analytics</li>
+    <li>Settings</li>
+  </ul>
+</nav>
+
+<div class="container">
+
+  <!-- INPUT PANEL -->
+  <div class="card">
+    <h3>Trade Inputs</h3>
+
+    <label>Direction</label>
+    <select id="direction">
+      <option value="long">Long</option>
+      <option value="short">Short</option>
+    </select>
+
+    <label>Account Balance</label>
+    <input type="number" id="balance" value="10000">
+
+    <label>Risk %</label>
+    <input type="number" id="riskPercent" value="2">
+
+    <label>Entry</label>
+    <input type="number" id="entry" value="100">
+
+    <label>Stop Loss</label>
+    <input type="number" id="sl" value="95">
+
+    <label>Take Profit</label>
+    <input type="number" id="tp" value="115">
+
+    <label>Leverage</label>
+    <input type="number" id="leverage" value="10">
+
+    <label>Commission %</label>
+    <input type="number" id="commission" value="0.1">
+
+    <button onclick="calculate()">Calculate</button>
+  </div>
+
+  <!-- OUTPUT -->
+  <div>
+
+    <div class="summary">
+      <div class="metric"><span>Position Size</span><strong id="positionSize">-</strong></div>
+      <div class="metric"><span>Risk USD</span><strong id="riskAmount">-</strong></div>
+      <div class="metric"><span>R:R Ratio</span><strong id="rr">-</strong></div>
+      <div class="metric"><span>Margin Required</span><strong id="margin">-</strong></div>
+      <div class="metric"><span>Projected Profit</span><strong id="profit">-</strong></div>
+      <div class="metric"><span>Liquidation Price</span><strong id="liq">-</strong></div>
+    </div>
+
+    <div class="trade-visual">
+      <div class="line entry" id="entryLine"></div>
+      <div class="line sl" id="slLine"></div>
+      <div class="line tp" id="tpLine"></div>
+    </div>
+
+    <div class="chart-container">
+      <div class="chart-title">Risk vs Reward Analysis</div>
+      <canvas id="riskChart"></canvas>
+    </div>
+
+    <div class="chart-container">
+      <div class="chart-title">Leverage Sensitivity (Margin Impact)</div>
+      <canvas id="leverageChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h3>Trade Metrics Table</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody id="resultTable"></tbody>
+      </table>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+
+
+function store_login_cookies() {
+    const COOKIE_NAME = "lastLogin";
+    const REDIRECT_PAGE = "auth.html";
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+    function getCookie(name) {
+        const cookies = document.cookie.split("; ");
+        for (let cookie of cookies) {
+            const [key, value] = cookie.split("=");
+            if (key === name) {
+                return decodeURIComponent(value);
+            }
+        }
+        return null;
+    }
+
+    function setCookie(name, value, days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        const expires = "expires=" + date.toUTCString();
+        document.cookie = `${name}=${encodeURIComponent(value)}; ${expires}; path=/`;
+    }
+
+    const existingLogin = getCookie(COOKIE_NAME);
+
+    if (existingLogin) {
+        const lastLoginDate = new Date(existingLogin);
+        const now = new Date();
+
+        if (now - lastLoginDate > SEVEN_DAYS_MS) {
+            window.location.href = "auth.html";
+            return;
+        }
+    }
+
+    // Update cookie with today's date
+    setCookie(COOKIE_NAME, new Date().toISOString(), 7);
+}
+
+// Run automatically when page loads
+window.addEventListener("load", store_login_cookies);
+
+
+
+
+
+
+let riskChart, leverageChart;
+
+function calculate() {
+
+  const balance = +balanceInput();
+  const riskPercent = +riskInput()/100;
+  const entry = +entryInput();
+  const sl = +slInput();
+  const tp = +tpInput();
+  const leverage = +leverageInput();
+  const commission = +commissionInput()/100;
+  const direction = document.getElementById("direction").value;
+
+  const riskUSD = balance * riskPercent;
+  const stopDistance = Math.abs(entry - sl);
+  const positionSize = riskUSD / stopDistance;
+  const margin = (positionSize * entry) / leverage;
+  const rewardDistance = Math.abs(tp - entry);
+  const rr = rewardDistance / stopDistance;
+  const grossProfit = rewardDistance * positionSize;
+  const fees = (positionSize * entry) * commission;
+  const netProfit = grossProfit - fees;
+  const liquidation = direction === "long"
+      ? entry - (entry / leverage)
+      : entry + (entry / leverage);
+
+  positionSizeDisplay(positionSize);
+  document.getElementById("riskAmount").innerText = "$"+riskUSD.toFixed(2);
+  document.getElementById("rr").innerText = rr.toFixed(2);
+  document.getElementById("margin").innerText = "$"+margin.toFixed(2);
+  document.getElementById("profit").innerText = "$"+netProfit.toFixed(2);
+  document.getElementById("liq").innerText = liquidation.toFixed(4);
+
+  updateVisual(entry, sl, tp);
+  updateCharts(riskUSD, netProfit);
+  updateTable(positionSize, margin, fees, liquidation);
+}
+
+function balanceInput(){ return document.getElementById("balance").value; }
+function riskInput(){ return document.getElementById("riskPercent").value; }
+function entryInput(){ return document.getElementById("entry").value; }
+function slInput(){ return document.getElementById("sl").value; }
+function tpInput(){ return document.getElementById("tp").value; }
+function leverageInput(){ return document.getElementById("leverage").value; }
+function commissionInput(){ return document.getElementById("commission").value; }
+
+function positionSizeDisplay(val){
+  document.getElementById("positionSize").innerText = val.toFixed(4);
+}
+
+function updateVisual(entry, sl, tp){
+  const max = Math.max(entry, sl, tp);
+  const min = Math.min(entry, sl, tp);
+  const range = max - min;
+  document.getElementById("entryLine").style.top = ((max-entry)/range*100)+"%";
+  document.getElementById("slLine").style.top = ((max-sl)/range*100)+"%";
+  document.getElementById("tpLine").style.top = ((max-tp)/range*100)+"%";
+}
+
+function updateCharts(risk, profit){
+
+  if(riskChart) riskChart.destroy();
+  riskChart = new Chart(document.getElementById("riskChart"), {
+    type: 'bar',
+    data: {
+      labels: ['Risk', 'Reward'],
+      datasets: [{
+        data: [risk, profit],
+        backgroundColor: ['#FF4C4C', '#00FF9C']
+      }]
+    },
+    options: { plugins: { legend: { display: false } } }
+  });
+
+  if(leverageChart) leverageChart.destroy();
+  leverageChart = new Chart(document.getElementById("leverageChart"), {
+    type: 'line',
+    data: {
+      labels: [1,5,10,20,50],
+      datasets: [{
+        label: 'Margin',
+        data: [10000,2000,1000,500,200],
+        borderColor: '#00E5FF'
+      }]
+    },
+    options: { plugins: { legend: { display: false } } }
+  });
+}
+
+function updateTable(pos, margin, fees, liq){
+  document.getElementById("resultTable").innerHTML = `
+    <tr><td style="color:var(--green)">Position Size</td><td>${pos.toFixed(4)}</td></tr>
+    <tr><td style="color:var(--yellow)">Margin</td><td>$${margin.toFixed(2)}</td></tr>
+    <tr><td style="color:var(--red)">Fees</td><td>$${fees.toFixed(2)}</td></tr>
+    <tr><td style="color:var(--purple)">Liquidation</td><td>${liq.toFixed(4)}</td></tr>
+  `;
+}
+
+calculate();
+
+</script>
+
+</body>
+</html>
