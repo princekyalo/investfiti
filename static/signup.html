@@ -216,6 +216,10 @@ input, button {
         });
 
         successBox.innerHTML = "Account created! Redirecting… Click <a href='index.html' style='color:#15803d;font-weight:600;'>here</a> if not redirected in 10 seconds.";
+        // Set cookies after successful login
+        const today = new Date().toISOString().split("T")[0];
+        document.cookie = "loggedIn=true; path=/; max-age=2592000";
+        document.cookie = `lastLogin=${today}; path=/; max-age=2592000`;
         successBox.classList.add("visible");
         errorBox.classList.remove("visible");
 
