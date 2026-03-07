@@ -6,45 +6,44 @@
 <title>Market News Terminal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;500;600;700;800;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
 
 <style>
-/* =============================================
-   DESIGN SYSTEM — Wall Street Dark Terminal
-   Palette: Deep black + Amber gold + Cyan blue
-   + Blood red accents. Monospace data, condensed
-   display, clean body. Bloomberg meets DEFCON.
-============================================= */
-
+/* ─────────────────────────────────────────────────
+   PALETTE  — Two-tone: near-black slate + warm off-
+   white text. Single accent: a muted antique gold.
+   Background: rich deep navy-charcoal gradient.
+   Nothing else. Clean, precise, editorial.
+───────────────────────────────────────────────── */
 :root {
-  --black:     #050608;
-  --deep:      #080c10;
-  --panel:     #0b1017;
-  --panel2:    #0e141c;
-  --border:    #1a2535;
-  --border2:   #243040;
-  --glow:      #1e3a5f;
+  /* Backgrounds — deep blue-charcoal gradient family */
+  --bg-base:    #0d1117;
+  --bg-mid:     #111920;
+  --bg-surface: #161f2a;
+  --bg-raised:  #1c2736;
+  --bg-hover:   #1f2e3e;
 
-  --amber:     #f0a500;
-  --amber-dim: #7a5200;
-  --amber-glow:rgba(240,165,0,0.12);
+  /* Borders — very subtle, single value */
+  --line:       rgba(255,255,255,0.07);
+  --line-med:   rgba(255,255,255,0.11);
 
-  --cyan:      #00c8e8;
-  --cyan-dim:  #005f70;
-  --cyan-glow: rgba(0,200,232,0.10);
+  /* Text — warm off-white hierarchy */
+  --t1:  #e8edf2;   /* primary */
+  --t2:  #8fa3b4;   /* secondary */
+  --t3:  #4a6070;   /* muted */
 
-  --green:     #00e676;
-  --green-dim: #004d28;
-  --red:       #ff3b3b;
-  --red-dim:   #5a0f0f;
+  /* Single accent — antique gold, used sparingly */
+  --gold:       #c9a84c;
+  --gold-dim:   rgba(201,168,76,0.10);
+  --gold-faint: rgba(201,168,76,0.05);
 
-  --text:      #c8d8e8;
-  --text-dim:  #4a6070;
-  --text-mid:  #7a9ab0;
+  /* Green for live indicator only */
+  --live:       #4caf7d;
 
-  --mono: 'Share Tech Mono', monospace;
-  --cond: 'Barlow Condensed', sans-serif;
-  --body: 'Barlow', sans-serif;
+  /* Typography */
+  --f-mono:  'DM Mono', monospace;
+  --f-sans:  'DM Sans', sans-serif;
+  --f-display: 'Playfair Display', serif;
 }
 
 *, *::before, *::after {
@@ -55,346 +54,280 @@
 html, body {
   height: 100%;
   overflow: hidden;
-  background: var(--black);
-  color: var(--text);
-  font-family: var(--body);
-  cursor: default;
+  /* Smooth deep gradient background — the key visual */
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 0%, #0f1e30 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 80% 100%, #0b1520 0%, transparent 60%),
+    linear-gradient(160deg, #0d1117 0%, #111a24 40%, #0c1319 100%);
+  color: var(--t1);
+  font-family: var(--f-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Scanline overlay */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0,0,0,0.08) 2px,
-    rgba(0,0,0,0.08) 4px
-  );
-  pointer-events: none;
-  z-index: 9999;
-}
-
-/* Corner grain texture */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  opacity: 0.4;
-  pointer-events: none;
-  z-index: 9998;
-}
-
-/* =============================================
-   LAYOUT SHELL
-============================================= */
+/* ─────────────────────────────────────────────────
+   SHELL
+───────────────────────────────────────────────── */
 .shell {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  position: relative;
 }
 
-/* =============================================
+/* ─────────────────────────────────────────────────
    TOPBAR
-============================================= */
+───────────────────────────────────────────────── */
 .topbar {
   display: flex;
-  align-items: stretch;
-  height: 52px;
-  background: var(--deep);
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Amber top accent line */
-.topbar::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--amber), var(--cyan), var(--amber), transparent);
-  animation: shimmer-line 4s linear infinite;
-  background-size: 200% 100%;
-}
-
-@keyframes shimmer-line {
-  0%   { background-position: -100% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.topbar-brand {
-  display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0 24px;
-  border-right: 1px solid var(--border);
+  height: 56px;
+  padding: 0 28px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(13,17,23,0.7);
+  backdrop-filter: blur(12px);
   flex-shrink: 0;
+  gap: 0;
 }
 
-.brand-icon {
-  width: 28px;
-  height: 28px;
-  position: relative;
-}
-
-.brand-icon svg {
-  width: 100%;
-  height: 100%;
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-right: 36px;
 }
 
 .brand-name {
-  font-family: var(--cond);
-  font-weight: 800;
-  font-size: 20px;
-  letter-spacing: 3px;
-  color: var(--amber);
-  text-transform: uppercase;
+  font-family: var(--f-display);
+  font-size: 19px;
+  color: var(--t1);
+  letter-spacing: 0.5px;
 }
 
-.brand-sub {
-  font-family: var(--mono);
+.brand-tag {
+  font-family: var(--f-mono);
   font-size: 9px;
-  color: var(--text-dim);
-  letter-spacing: 2px;
-  line-height: 1;
-  margin-top: 2px;
+  color: var(--gold);
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border: 1px solid rgba(201,168,76,0.3);
+  border-radius: 4px;
 }
 
-.topbar-meta {
+.divider-v {
+  width: 1px;
+  height: 20px;
+  background: var(--line-med);
+  margin: 0 24px;
+  flex-shrink: 0;
+}
+
+.meta-row {
   display: flex;
   align-items: center;
-  gap: 0;
+  gap: 28px;
   flex: 1;
-  padding: 0 20px;
 }
 
-.meta-cell {
+.meta {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 0 20px;
-  border-right: 1px solid var(--border);
 }
 
-.meta-cell:last-child { border-right: none; }
-
-.meta-label {
-  font-family: var(--mono);
+.meta-lbl {
+  font-family: var(--f-mono);
   font-size: 9px;
-  color: var(--text-dim);
+  color: var(--t3);
   letter-spacing: 1.5px;
+  text-transform: uppercase;
 }
 
-.meta-value {
-  font-family: var(--mono);
-  font-size: 13px;
-  color: var(--cyan);
-  letter-spacing: 1px;
+.meta-val {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--t2);
+  letter-spacing: 0.5px;
 }
 
-.meta-value.amber { color: var(--amber); }
-.meta-value.green { color: var(--green); }
-.meta-value.red   { color: var(--red); }
+.meta-val.gold { color: var(--gold); }
 
-.topbar-status {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 24px;
-  border-left: 1px solid var(--border);
+/* Status */
+.status-pill {
   margin-left: auto;
-  flex-shrink: 0;
-}
-
-.status-indicator {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-family: var(--mono);
-  font-size: 11px;
+  font-family: var(--f-mono);
+  font-size: 10px;
   letter-spacing: 1.5px;
-  color: var(--text-dim);
+  color: var(--t3);
+  text-transform: uppercase;
 }
 
-.status-dot {
-  width: 7px;
-  height: 7px;
+.s-dot {
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: var(--text-dim);
+  background: var(--t3);
   transition: background 0.4s, box-shadow 0.4s;
-}
-
-.status-dot.live {
-  background: var(--green);
-  box-shadow: 0 0 8px var(--green), 0 0 16px rgba(0,230,118,0.3);
-  animation: dot-pulse 2s ease-in-out infinite;
-}
-
-.status-dot.error {
-  background: var(--red);
-  box-shadow: 0 0 8px var(--red);
-}
-
-@keyframes dot-pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.35; }
-}
-
-/* =============================================
-   TICKER BAND
-============================================= */
-.ticker-band {
-  height: 36px;
-  background: var(--panel);
-  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
+}
+
+.s-dot.live {
+  background: var(--live);
+  box-shadow: 0 0 6px var(--live), 0 0 14px rgba(76,175,125,0.3);
+  animation: blink 2.5s ease-in-out infinite;
+}
+
+.s-dot.error { background: #c0392b; }
+
+@keyframes blink {
+  0%,100% { opacity:1; }
+  50%      { opacity:0.3; }
+}
+
+/* ─────────────────────────────────────────────────
+   TICKER BAND  — 75% slower = 480s (was ~120s)
+───────────────────────────────────────────────── */
+.ticker-wrap {
+  height: 40px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(22,31,42,0.6);
   overflow: hidden;
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   position: relative;
 }
 
-/* Left fade mask */
-.ticker-band::before {
+/* Fade masks */
+.ticker-wrap::before,
+.ticker-wrap::after {
   content: "";
   position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 80px;
-  background: linear-gradient(to right, var(--panel), transparent);
+  top: 0; bottom: 0;
+  width: 120px;
   z-index: 2;
   pointer-events: none;
 }
-
-/* Right fade mask */
-.ticker-band::after {
-  content: "";
-  position: absolute;
-  right: 0; top: 0; bottom: 0;
-  width: 80px;
-  background: linear-gradient(to left, var(--panel), transparent);
-  z-index: 2;
-  pointer-events: none;
+.ticker-wrap::before {
+  left: 0;
+  background: linear-gradient(to right, var(--bg-surface), transparent);
+}
+.ticker-wrap::after {
+  right: 0;
+  background: linear-gradient(to left, var(--bg-surface), transparent);
 }
 
-.ticker-label {
+/* Label chip */
+.ticker-chip {
   position: absolute;
   left: 0; top: 0; bottom: 0;
-  width: 80px;
+  width: 88px;
+  background: var(--gold-dim);
+  border-right: 1px solid rgba(201,168,76,0.2);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--amber);
-  font-family: var(--cond);
-  font-weight: 800;
-  font-size: 11px;
+  font-family: var(--f-mono);
+  font-size: 9px;
   letter-spacing: 2px;
-  color: var(--black);
+  color: var(--gold);
+  text-transform: uppercase;
   z-index: 3;
   flex-shrink: 0;
 }
 
-.ticker-scroll {
+.ticker-track {
   display: flex;
   align-items: center;
   white-space: nowrap;
-  padding-left: 100px;
-  animation: ticker-move 120s linear infinite;
+  padding-left: 108px;
+  /* 480s = original ~120s × 4 (75% slower) */
+  animation: ticker-roll 480s linear infinite;
   will-change: transform;
 }
 
-.ticker-scroll:hover {
+.ticker-track:hover {
   animation-play-state: paused;
 }
 
-@keyframes ticker-move {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+@keyframes ticker-roll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
 
 .t-item {
-  font-family: var(--mono);
+  font-family: var(--f-mono);
   font-size: 12px;
-  letter-spacing: 0.5px;
-  padding-right: 60px;
-  opacity: 0.85;
-  transition: opacity 0.2s;
+  color: var(--t2);
+  padding-right: 64px;
+  letter-spacing: 0.2px;
+  transition: color 0.2s;
 }
 
-.t-item:hover { opacity: 1; }
+.t-item:hover { color: var(--t1); }
 
-.t-item.gb      { color: var(--cyan); }
-.t-item.citizen { color: var(--green); }
-.t-item.ntv     { color: var(--amber); }
-
-.t-divider {
-  font-family: var(--mono);
-  font-size: 14px;
-  color: var(--border2);
-  padding-right: 60px;
+.t-sep {
+  color: var(--t3);
+  padding-right: 64px;
+  font-size: 10px;
   flex-shrink: 0;
 }
 
-/* =============================================
-   SECTION HEADER BAR
-============================================= */
-.section-bar {
+/* ─────────────────────────────────────────────────
+   PANEL STRIP HEADER
+───────────────────────────────────────────────── */
+.strip {
   display: flex;
   align-items: center;
-  gap: 0;
-  background: var(--deep);
-  border-bottom: 1px solid var(--border);
+  height: 38px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(13,17,23,0.4);
   flex-shrink: 0;
-  height: 32px;
 }
 
-.section-tab {
+.strip-tab {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 20px;
   height: 100%;
-  border-right: 1px solid var(--border);
-  font-family: var(--cond);
-  font-weight: 700;
-  font-size: 11px;
+  padding: 0 28px;
+  border-right: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: 10px;
   letter-spacing: 2px;
-  color: var(--text-dim);
+  color: var(--t3);
   text-transform: uppercase;
 }
 
-.section-tab.active {
-  color: var(--amber);
-  border-bottom: 2px solid var(--amber);
+.strip-tab.on {
+  color: var(--gold);
+  border-bottom: 1.5px solid var(--gold);
   margin-bottom: -1px;
-  background: var(--amber-glow);
+  background: var(--gold-faint);
 }
 
-.section-tab .dot {
-  width: 5px;
-  height: 5px;
+.strip-tab .pip {
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
   background: currentColor;
 }
 
-.section-time {
+.strip-date {
   margin-left: auto;
-  padding: 0 20px;
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--text-dim);
+  padding: 0 28px;
+  font-family: var(--f-mono);
+  font-size: 10px;
+  color: var(--t3);
   letter-spacing: 1px;
 }
 
-/* =============================================
-   MAIN GRID
-============================================= */
-.main-grid {
+/* ─────────────────────────────────────────────────
+   MAIN COLUMNS
+───────────────────────────────────────────────── */
+.columns {
   display: grid;
   grid-template-columns: 1fr 1px 1fr;
   flex: 1;
@@ -402,569 +335,507 @@ body::after {
   min-height: 0;
 }
 
-.grid-divider {
-  background: var(--border);
-  flex-shrink: 0;
+.col-divider {
+  background: var(--line);
 }
 
-/* =============================================
-   NEWS PANEL
-============================================= */
-.news-panel {
+/* ─────────────────────────────────────────────────
+   NEWS COLUMN
+───────────────────────────────────────────────── */
+.col {
   display: flex;
   flex-direction: column;
   overflow: hidden;
   min-height: 0;
-  background: var(--panel);
 }
 
-.panel-header {
+.col-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 20px;
-  border-bottom: 1px solid var(--border);
-  background: var(--panel2);
+  padding: 14px 28px;
+  border-bottom: 1px solid var(--line);
   flex-shrink: 0;
 }
 
-.panel-title {
-  font-family: var(--cond);
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 2.5px;
-  color: var(--amber);
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.col-title {
+  font-family: var(--f-display);
+  font-size: 15px;
+  color: var(--t1);
+  letter-spacing: 0.3px;
 }
 
-.panel-title::before {
-  content: "";
-  display: block;
-  width: 3px;
-  height: 14px;
-  background: var(--amber);
-  border-radius: 2px;
-}
-
-.panel-count {
-  font-family: var(--mono);
+.col-badge {
+  font-family: var(--f-mono);
   font-size: 10px;
-  color: var(--text-dim);
-  background: var(--border);
-  padding: 2px 8px;
-  border-radius: 3px;
+  color: var(--t3);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--line-med);
+  padding: 3px 10px;
+  border-radius: 20px;
   letter-spacing: 1px;
 }
 
-/* Scroll wrapper with fade */
-.scroll-wrapper {
+/* Scroll area */
+.scroll-area {
   flex: 1;
   overflow: hidden;
   position: relative;
   min-height: 0;
 }
 
-.scroll-wrapper::before,
-.scroll-wrapper::after {
+/* Smooth fade at edges */
+.scroll-area::before,
+.scroll-area::after {
   content: "";
   position: absolute;
   left: 0; right: 0;
-  height: 40px;
-  z-index: 2;
+  height: 48px;
   pointer-events: none;
+  z-index: 2;
 }
 
-.scroll-wrapper::before {
+.scroll-area::before {
   top: 0;
-  background: linear-gradient(to bottom, var(--panel), transparent);
+  background: linear-gradient(to bottom,
+    rgba(13,17,23,0.95),
+    transparent);
 }
 
-.scroll-wrapper::after {
+.scroll-area::after {
   bottom: 0;
-  background: linear-gradient(to top, var(--panel), transparent);
+  background: linear-gradient(to top,
+    rgba(13,17,23,0.95),
+    transparent);
 }
 
 .news-list {
-  padding: 6px 0;
-  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  padding: 8px 0;
+  transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform;
 }
 
-.news-item {
+/* ─────────────────────────────────────────────────
+   NEWS ITEM  — 40% larger font (13px × 1.4 = ~19px)
+───────────────────────────────────────────────── */
+.ni {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 11px 20px;
-  border-bottom: 1px solid rgba(26,37,53,0.6);
-  transition: background 0.2s;
+  gap: 14px;
+  padding: 14px 28px;
+  border-bottom: 1px solid var(--line);
   position: relative;
+  transition: background 0.25s;
   cursor: default;
 }
 
-.news-item::before {
+.ni:last-child { border-bottom: none; }
+
+/* Hover — subtle warm wash */
+.ni::after {
   content: "";
   position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 0;
-  background: var(--amber-glow);
-  transition: width 0.3s;
+  inset: 0;
+  background: var(--gold-faint);
+  opacity: 0;
+  transition: opacity 0.25s;
+  border-radius: 4px;
+  pointer-events: none;
 }
 
-.news-item:hover::before { width: 100%; }
+.ni:hover::after { opacity: 1; }
 
-.news-item:last-child { border-bottom: none; }
-
-.item-index {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--text-dim);
-  line-height: 1.5;
-  width: 22px;
+.ni-num {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--t3);
+  line-height: 1.6;
+  width: 24px;
   flex-shrink: 0;
   text-align: right;
-  padding-top: 1px;
+  padding-top: 3px;
+  letter-spacing: 0.5px;
 }
 
-.item-source {
-  font-family: var(--mono);
+/* Source tag — minimal, one style only */
+.ni-src {
+  font-family: var(--f-mono);
   font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  padding: 2px 6px;
-  border-radius: 2px;
+  letter-spacing: 1.5px;
+  color: var(--gold);
+  background: var(--gold-dim);
+  border: 1px solid rgba(201,168,76,0.2);
+  padding: 3px 7px;
+  border-radius: 4px;
   flex-shrink: 0;
-  margin-top: 2px;
-  line-height: 1.4;
+  margin-top: 3px;
+  line-height: 1.3;
 }
 
-.item-source.gb {
-  background: var(--cyan-glow);
-  color: var(--cyan);
-  border: 1px solid var(--cyan-dim);
-}
-
-.item-source.citizen {
-  background: var(--green-dim);
-  color: var(--green);
-  border: 1px solid #004d2880;
-}
-
-.item-source.ntv {
-  background: var(--amber-glow);
-  color: var(--amber);
-  border: 1px solid var(--amber-dim);
-}
-
-.item-text {
-  font-family: var(--body);
-  font-size: 13px;
+/* Headline text — 40% larger */
+.ni-text {
+  font-family: var(--f-sans);
+  font-size: 18.2px;   /* 13 × 1.4 */
   font-weight: 400;
   line-height: 1.5;
-  color: var(--text);
+  color: var(--t1);
+  flex: 1;
   position: relative;
   z-index: 1;
-  flex: 1;
+  letter-spacing: -0.1px;
 }
 
-.news-item:hover .item-text { color: #e8f4ff; }
+.ni:hover .ni-text { color: #ffffff; }
 
-/* =============================================
-   BOTTOM BAR
-============================================= */
-.bottom-bar {
+/* ─────────────────────────────────────────────────
+   FOOTER BAR
+───────────────────────────────────────────────── */
+.footer-bar {
   display: flex;
   align-items: center;
-  height: 28px;
-  background: var(--deep);
-  border-top: 1px solid var(--border);
-  padding: 0 20px;
+  height: 30px;
+  padding: 0 28px;
+  border-top: 1px solid var(--line);
+  background: rgba(13,17,23,0.7);
   gap: 20px;
   flex-shrink: 0;
 }
 
-.bottom-bar::before {
-  content: "";
-  position: absolute;
-  bottom: 28px; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--border2), transparent);
-}
-
-.bar-item {
-  font-family: var(--mono);
+.fb-item {
+  font-family: var(--f-mono);
   font-size: 10px;
-  color: var(--text-dim);
+  color: var(--t3);
   letter-spacing: 1px;
   display: flex;
   align-items: center;
   gap: 6px;
+  text-transform: uppercase;
 }
 
-.bar-item .bar-val {
-  color: var(--cyan);
+.fb-val {
+  color: var(--t2);
 }
 
-.bar-item .bar-val.amber { color: var(--amber); }
-
-.bar-sep {
+.fb-sep {
   width: 1px;
-  height: 12px;
-  background: var(--border);
+  height: 10px;
+  background: var(--line-med);
 }
 
-#footerTime {
+#footerSync {
   margin-left: auto;
-  font-family: var(--mono);
+  font-family: var(--f-mono);
   font-size: 10px;
-  color: var(--text-dim);
-  letter-spacing: 1px;
+  color: var(--t3);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
 }
 
-/* =============================================
+/* ─────────────────────────────────────────────────
    STATE MESSAGES
-============================================= */
-.state-msg {
-  padding: 40px 20px;
-  text-align: center;
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--text-dim);
+───────────────────────────────────────────────── */
+.msg {
+  padding: 48px 28px;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--t3);
   letter-spacing: 1px;
   line-height: 2;
+  text-align: center;
+  text-transform: uppercase;
 }
 
-.state-msg.error { color: var(--red); }
+.msg.err { color: #c0392b; }
 
-/* =============================================
-   ENTRANCE ANIMATION
-============================================= */
-@keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* ─────────────────────────────────────────────────
+   STAGGER ENTRANCE
+───────────────────────────────────────────────── */
+@keyframes rise {
+  from { opacity:0; transform:translateY(8px); }
+  to   { opacity:1; transform:translateY(0); }
 }
-
-.news-item {
-  animation: fade-in-up 0.4s ease both;
-}
+.ni { animation: rise 0.5s ease both; }
 </style>
 </head>
 <body>
 
 <div class="shell">
 
-  <!-- ═══ TOPBAR ═══ -->
+  <!-- ══ TOPBAR ══ -->
   <div class="topbar">
-    <div class="topbar-brand">
-      <!-- Chart icon -->
-      <div class="brand-icon">
-        <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <polyline points="2,22 8,14 13,18 19,8 26,12" stroke="#f0a500" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="26" cy="12" r="2.5" fill="#00c8e8"/>
-          <line x1="2" y1="24" x2="26" y2="24" stroke="#1a2535" stroke-width="1.5"/>
-        </svg>
+    <div class="brand">
+      <div class="brand-name">InvestFiti</div>
+      <div class="brand-tag">Terminal</div>
+    </div>
+
+    <div class="divider-v"></div>
+
+    <div class="meta-row">
+      <div class="meta">
+        <div class="meta-lbl">Exchange</div>
+        <div class="meta-val gold">NSE · LSE · NYSE</div>
       </div>
-      <div>
-        <div class="brand-name">InvestFiti</div>
-        <div class="brand-sub">MARKET NEWS TERMINAL</div>
+      <div class="meta">
+        <div class="meta-lbl">Sources</div>
+        <div class="meta-val" id="metaSources">—</div>
+      </div>
+      <div class="meta">
+        <div class="meta-lbl">Headlines</div>
+        <div class="meta-val" id="metaCount">—</div>
+      </div>
+      <div class="meta">
+        <div class="meta-lbl">Session</div>
+        <div class="meta-val" id="metaClock">--:--:--</div>
       </div>
     </div>
 
-    <div class="topbar-meta">
-      <div class="meta-cell">
-        <div class="meta-label">EXCHANGE</div>
-        <div class="meta-value amber">NSE · LSE · NYSE</div>
-      </div>
-      <div class="meta-cell">
-        <div class="meta-label">FEED</div>
-        <div class="meta-value" id="feedCount">— SOURCES</div>
-      </div>
-      <div class="meta-cell">
-        <div class="meta-label">HEADLINES</div>
-        <div class="meta-value green" id="headlineCount">—</div>
-      </div>
-      <div class="meta-cell">
-        <div class="meta-label">SESSION</div>
-        <div class="meta-value" id="sessionTime">--:--:--</div>
-      </div>
-    </div>
-
-    <div class="topbar-status">
-      <div class="status-indicator">
-        <div class="status-dot" id="statusDot"></div>
-        <span id="statusText">CONNECTING</span>
-      </div>
+    <div class="status-pill">
+      <div class="s-dot" id="sDot"></div>
+      <span id="sText">Connecting</span>
     </div>
   </div>
 
-  <!-- ═══ TICKER BAND ═══ -->
-  <div class="ticker-band">
-    <div class="ticker-label">LIVE FEED</div>
-    <div class="ticker-scroll" id="tickerScroll">
-      <span class="t-item" style="color:var(--text-dim)">Awaiting feed data...</span>
+  <!-- ══ TICKER ══ -->
+  <div class="ticker-wrap">
+    <div class="ticker-chip">Live Feed</div>
+    <div class="ticker-track" id="tickerTrack">
+      <span class="t-item">Awaiting feed data…</span>
     </div>
   </div>
 
-  <!-- ═══ SECTION BAR ═══ -->
-  <div class="section-bar">
-    <div class="section-tab active"><span class="dot"></span>ALL MARKETS</div>
-    <div class="section-tab"><span class="dot"></span>EQUITIES</div>
-    <div class="section-tab"><span class="dot"></span>MACRO</div>
-    <div class="section-tab"><span class="dot"></span>COMMODITIES</div>
-    <div class="section-time" id="liveDate">—</div>
+  <!-- ══ STRIP HEADER ══ -->
+  <div class="strip">
+    <div class="strip-tab on"><span class="pip"></span>All Markets</div>
+    <div class="strip-tab"><span class="pip"></span>Equities</div>
+    <div class="strip-tab"><span class="pip"></span>Macro</div>
+    <div class="strip-tab"><span class="pip"></span>Commodities</div>
+    <div class="strip-date" id="stripDate">—</div>
   </div>
 
-  <!-- ═══ MAIN GRID ═══ -->
-  <div class="main-grid">
+  <!-- ══ COLUMNS ══ -->
+  <div class="columns">
 
-    <div class="news-panel">
-      <div class="panel-header">
-        <div class="panel-title">Global Markets</div>
-        <div class="panel-count" id="count1">0 ITEMS</div>
+    <div class="col">
+      <div class="col-head">
+        <div class="col-title">Global Markets</div>
+        <div class="col-badge" id="badge1">0 items</div>
       </div>
-      <div class="scroll-wrapper">
-        <div class="news-list" id="panel1">
-          <div class="state-msg">Initialising feed...</div>
-        </div>
+      <div class="scroll-area">
+        <div class="news-list" id="panel1"><div class="msg">Initialising…</div></div>
       </div>
     </div>
 
-    <div class="grid-divider"></div>
+    <div class="col-divider"></div>
 
-    <div class="news-panel">
-      <div class="panel-header">
-        <div class="panel-title">Business &amp; Economy</div>
-        <div class="panel-count" id="count2">0 ITEMS</div>
+    <div class="col">
+      <div class="col-head">
+        <div class="col-title">Business &amp; Economy</div>
+        <div class="col-badge" id="badge2">0 items</div>
       </div>
-      <div class="scroll-wrapper">
-        <div class="news-list" id="panel2">
-          <div class="state-msg">Initialising feed...</div>
-        </div>
+      <div class="scroll-area">
+        <div class="news-list" id="panel2"><div class="msg">Initialising…</div></div>
       </div>
     </div>
 
   </div>
 
-  <!-- ═══ BOTTOM BAR ═══ -->
-  <div class="bottom-bar">
-    <div class="bar-item">SOURCE <span class="bar-val amber" id="barSources">—</span></div>
-    <div class="bar-sep"></div>
-    <div class="bar-item">TOTAL ITEMS <span class="bar-val" id="barItems">—</span></div>
-    <div class="bar-sep"></div>
-    <div class="bar-item">POLL INTERVAL <span class="bar-val">120s</span></div>
-    <div class="bar-sep"></div>
-    <div class="bar-item">DB <span class="bar-val amber">FIREBASE EU-WEST-1</span></div>
-    <div id="footerTime">LAST SYNC: —</div>
+  <!-- ══ FOOTER ══ -->
+  <div class="footer-bar">
+    <div class="fb-item">Feed <span class="fb-val" id="fbSrc">—</span></div>
+    <div class="fb-sep"></div>
+    <div class="fb-item">Items <span class="fb-val" id="fbItems">—</span></div>
+    <div class="fb-sep"></div>
+    <div class="fb-item">Poll <span class="fb-val">120 s</span></div>
+    <div class="fb-sep"></div>
+    <div class="fb-item">DB <span class="fb-val">Firebase EU-West-1</span></div>
+    <div id="footerSync">Last sync: —</div>
   </div>
 
 </div><!-- /shell -->
 
 
 <script>
-/* ====================================================
+/* ──────────────────────────────────────────
    CONFIG
-==================================================== */
-const FIREBASE_URL    = "https://investfiti-news-6c79c-default-rtdb.europe-west1.firebasedatabase.app/.json";
-const POLL_MS         = 120000;
-const SCROLL_MS       = 3800;
-const SCROLL_PX       = 52;
+────────────────────────────────────────── */
+const FIREBASE_URL = "https://investfiti-news-6c79c-default-rtdb.europe-west1.firebasedatabase.app/.json";
+const POLL_MS      = 120000;
+const SCROLL_MS    = 4000;
+const SCROLL_PX    = 54;
 
-let scroll1 = 0, scroll2 = 0, scrollTimer = null;
+let s1 = 0, s2 = 0, scrollTimer = null;
 
-/* ====================================================
+/* ──────────────────────────────────────────
    LOGIN COOKIE GUARD
-==================================================== */
-(function() {
-  const NAME = "lastLogin", WEEK = 7*24*60*60*1000;
-  function get(n) {
-    for (const c of document.cookie.split("; ")) {
-      const [k,v] = c.split("=");
-      if (k===n) return decodeURIComponent(v);
-    }
-    return null;
-  }
-  function set(n,v,d) {
-    const e = new Date(Date.now()+d*86400000).toUTCString();
-    document.cookie = `${n}=${encodeURIComponent(v)}; expires=${e}; path=/`;
-  }
-  const ex = get(NAME);
-  if (ex && Date.now()-new Date(ex).getTime() > WEEK) { window.location.href="auth.html"; return; }
-  set(NAME, new Date().toISOString(), 7);
+────────────────────────────────────────── */
+(function(){
+  const N="lastLogin", W=7*24*60*60*1000;
+  function gc(n){ for(const c of document.cookie.split("; ")){ const[k,v]=c.split("="); if(k===n) return decodeURIComponent(v); } return null; }
+  function sc(n,v,d){ document.cookie=`${n}=${encodeURIComponent(v)}; expires=${new Date(Date.now()+d*86400000).toUTCString()}; path=/`; }
+  const ex=gc(N);
+  if(ex && Date.now()-new Date(ex).getTime()>W){ window.location.href="auth.html"; return; }
+  sc(N, new Date().toISOString(), 7);
 })();
 
-/* ====================================================
-   LIVE CLOCK
-==================================================== */
-function updateClock() {
+/* ──────────────────────────────────────────
+   CLOCK
+────────────────────────────────────────── */
+function tick(){
   const now = new Date();
-  const t   = now.toLocaleTimeString("en-GB", { hour12: false });
-  const d   = now.toLocaleDateString("en-GB", { weekday:"short", day:"2-digit", month:"short", year:"numeric" });
-  const el  = document.getElementById("sessionTime");
-  const dl  = document.getElementById("liveDate");
-  if (el) el.textContent = t;
-  if (dl) dl.textContent = d.toUpperCase();
+  const el  = document.getElementById("metaClock");
+  const dl  = document.getElementById("stripDate");
+  if(el) el.textContent = now.toLocaleTimeString("en-GB",{hour12:false});
+  if(dl) dl.textContent = now.toLocaleDateString("en-GB",{weekday:"short",day:"2-digit",month:"short",year:"numeric"}).toUpperCase();
 }
-updateClock();
-setInterval(updateClock, 1000);
+tick();
+setInterval(tick, 1000);
 
-/* ====================================================
+/* ──────────────────────────────────────────
    STATUS
-==================================================== */
-function setStatus(state, text) {
-  document.getElementById("statusDot").className  = "status-dot " + state;
-  document.getElementById("statusText").textContent = text;
+────────────────────────────────────────── */
+function setStatus(state, text){
+  document.getElementById("sDot").className = "s-dot " + state;
+  document.getElementById("sText").textContent = text;
 }
 
-/* ====================================================
+/* ──────────────────────────────────────────
    FETCH
-==================================================== */
-async function fetchNews() {
-  setStatus("", "SYNCING");
+────────────────────────────────────────── */
+async function fetchNews(){
+  setStatus("","Syncing");
   try {
     const res  = await fetch(FIREBASE_URL);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
     const raw  = await res.json();
-    const data = normalise(raw);
-    render(data);
-    setStatus("live", "LIVE");
-  } catch(e) {
+    render(normalise(raw));
+    setStatus("live","Live");
+  } catch(e){
     console.error(e);
-    setStatus("error", "NO SIGNAL");
+    setStatus("error","No signal");
     showError(e.message);
   }
 }
 
-/* ====================================================
-   NORMALISE — handles object/array Firebase shapes
-==================================================== */
-function normalise(raw) {
-  if (Array.isArray(raw)) return { generated_at: null, sources: raw };
-  if (raw && raw.sources) {
-    let s = raw.sources;
-    if (!Array.isArray(s)) s = Object.values(s);
-    s = s.map(src => {
+/* ──────────────────────────────────────────
+   NORMALISE
+────────────────────────────────────────── */
+function normalise(raw){
+  if(Array.isArray(raw)) return {generated_at:null, sources:raw};
+  if(raw && raw.sources){
+    let s = Array.isArray(raw.sources) ? raw.sources : Object.values(raw.sources);
+    s = s.map(src=>{
       let a = src.articles;
-      if (a && !Array.isArray(a)) a = Object.values(a);
-      return { ...src, articles: a||[] };
+      if(a && !Array.isArray(a)) a = Object.values(a);
+      return {...src, articles:a||[]};
     });
-    return { generated_at: raw.generated_at||null, sources: s };
+    return {generated_at:raw.generated_at||null, sources:s};
   }
-  return { generated_at: null, sources: [] };
+  return {generated_at:null, sources:[]};
 }
 
-/* ====================================================
-   SOURCE CSS CLASS
-==================================================== */
-function cls(name="") {
-  const n = name.toLowerCase();
-  if (n.includes("gb"))       return "gb";
-  if (n.includes("citizen"))  return "citizen";
-  if (n.includes("ntv"))      return "ntv";
-  return "gb";
+/* ──────────────────────────────────────────
+   SOURCE SHORT NAME
+────────────────────────────────────────── */
+function shortName(n=""){
+  const l = n.toLowerCase();
+  if(l.includes("gb"))       return "GB News";
+  if(l.includes("citizen"))  return "Citizen";
+  if(l.includes("ntv"))      return "NTV";
+  return (n.split(" ")[0]||"SRC").toUpperCase();
 }
 
-/* ====================================================
+/* ──────────────────────────────────────────
    RENDER
-==================================================== */
-function render({ generated_at, sources }) {
-  const p1 = document.getElementById("panel1");
-  const p2 = document.getElementById("panel2");
+────────────────────────────────────────── */
+function render({generated_at, sources}){
+  if(!sources||!sources.length){ showError("No sources in database."); return; }
 
-  if (!sources || !sources.length) { showError("No sources in database."); return; }
-
-  /* Collect unique headlines */
-  const seen = new Set(), all = [];
-  sources.forEach(src => {
-    const c = cls(src.source);
-    const short = (src.source||"").split(" ")[0].toUpperCase();
-    (src.articles||[]).forEach(t => {
-      if (t && !seen.has(t)) { seen.add(t); all.push({ text:t, cls:c, short }); }
+  const seen=new Set(), all=[];
+  sources.forEach(src=>{
+    const sn = shortName(src.source);
+    (src.articles||[]).forEach(t=>{
+      if(t&&!seen.has(t)){ seen.add(t); all.push({text:t, src:sn}); }
     });
   });
 
-  if (!all.length) { showError("No headlines available."); return; }
+  if(!all.length){ showError("No headlines available."); return; }
 
-  /* Update header counts */
-  document.getElementById("feedCount").textContent    = sources.length + " SOURCES";
-  document.getElementById("headlineCount").textContent = all.length + " ITEMS";
-  document.getElementById("barSources").textContent   = sources.length;
-  document.getElementById("barItems").textContent     = all.length;
+  /* Meta */
+  document.getElementById("metaSources").textContent = sources.length;
+  document.getElementById("metaCount").textContent   = all.length;
+  document.getElementById("fbSrc").textContent       = sources.length;
+  document.getElementById("fbItems").textContent     = all.length;
 
-  /* Ticker — duplicate for seamless loop */
-  const tickHTML = all.map(h =>
-    `<span class="t-item ${h.cls}">${h.text}</span><span class="t-divider">◆</span>`
+  /* Ticker */
+  const tHTML = all.map(h=>
+    `<span class="t-item">${h.text}</span><span class="t-sep">·</span>`
   ).join("");
-  document.getElementById("tickerScroll").innerHTML = tickHTML + tickHTML;
+  document.getElementById("tickerTrack").innerHTML = tHTML + tHTML;
 
-  /* Panels split */
-  const mid = Math.ceil(all.length / 2);
+  /* Panels */
+  const mid = Math.ceil(all.length/2);
 
-  function buildPanel(items) {
-    return items.map((h, i) => `
-      <div class="news-item" style="animation-delay:${i*30}ms">
-        <div class="item-index">${String(i+1).padStart(2,"0")}</div>
-        <div class="item-source ${h.cls}">${h.short}</div>
-        <div class="item-text">${h.text}</div>
+  function panel(items){
+    return items.map((h,i)=>`
+      <div class="ni" style="animation-delay:${i*25}ms">
+        <div class="ni-num">${String(i+1).padStart(2,"0")}</div>
+        <div class="ni-src">${h.src}</div>
+        <div class="ni-text">${h.text}</div>
       </div>`).join("");
   }
 
-  p1.innerHTML = buildPanel(all.slice(0, mid));
-  p2.innerHTML = buildPanel(all.slice(mid));
+  document.getElementById("panel1").innerHTML = panel(all.slice(0,mid));
+  document.getElementById("panel2").innerHTML = panel(all.slice(mid));
+  document.getElementById("badge1").textContent = mid+" items";
+  document.getElementById("badge2").textContent = (all.length-mid)+" items";
 
-  document.getElementById("count1").textContent = mid + " ITEMS";
-  document.getElementById("count2").textContent = (all.length - mid) + " ITEMS";
-
-  /* Footer time */
-  const syncTime = generated_at ? new Date(generated_at) : new Date();
-  document.getElementById("footerTime").textContent =
-    "LAST SYNC: " + syncTime.toLocaleString("en-GB", { hour12:false }).toUpperCase();
+  const ts = generated_at ? new Date(generated_at) : new Date();
+  document.getElementById("footerSync").textContent =
+    "Last sync: " + ts.toLocaleString("en-GB",{hour12:false}).toUpperCase();
 
   resetScroll();
 }
 
-/* ====================================================
-   AUTO-SCROLL
-==================================================== */
-function resetScroll() {
-  scroll1 = 0; scroll2 = 0;
+/* ──────────────────────────────────────────
+   SCROLL
+────────────────────────────────────────── */
+function resetScroll(){
+  s1=0; s2=0; applyScroll();
+  if(scrollTimer) clearInterval(scrollTimer);
+  scrollTimer = setInterval(scrollTick, SCROLL_MS);
+}
+
+function scrollTick(){
+  const p1=document.getElementById("panel1");
+  const p2=document.getElementById("panel2");
+  if(!p1||!p2) return;
+  const max1=Math.max(0, p1.scrollHeight-p1.parentElement.clientHeight+48);
+  const max2=Math.max(0, p2.scrollHeight-p2.parentElement.clientHeight+48);
+  s1 = s1>=max1 ? 0 : s1+SCROLL_PX;
+  s2 = s2>=max2 ? 0 : s2+SCROLL_PX;
   applyScroll();
-  if (scrollTimer) clearInterval(scrollTimer);
-  scrollTimer = setInterval(tick, SCROLL_MS);
 }
 
-function tick() {
-  const p1 = document.getElementById("panel1");
-  const p2 = document.getElementById("panel2");
-  if (!p1 || !p2) return;
-  const max1 = Math.max(0, p1.scrollHeight - p1.parentElement.clientHeight + 40);
-  const max2 = Math.max(0, p2.scrollHeight - p2.parentElement.clientHeight + 40);
-  scroll1 = scroll1 >= max1 ? 0 : scroll1 + SCROLL_PX;
-  scroll2 = scroll2 >= max2 ? 0 : scroll2 + SCROLL_PX;
-  applyScroll();
+function applyScroll(){
+  const p1=document.getElementById("panel1");
+  const p2=document.getElementById("panel2");
+  if(p1) p1.style.transform=`translateY(-${s1}px)`;
+  if(p2) p2.style.transform=`translateY(-${s2}px)`;
 }
 
-function applyScroll() {
-  const p1 = document.getElementById("panel1");
-  const p2 = document.getElementById("panel2");
-  if (p1) p1.style.transform = `translateY(-${scroll1}px)`;
-  if (p2) p2.style.transform = `translateY(-${scroll2}px)`;
+/* ──────────────────────────────────────────
+   ERROR
+────────────────────────────────────────── */
+function showError(msg){
+  const e=`<div class="msg err">⚠ Feed error — ${msg}</div>`;
+  document.getElementById("panel1").innerHTML=e;
+  document.getElementById("panel2").innerHTML=e;
+  document.getElementById("footerSync").textContent="Last sync: failed";
 }
 
-/* ====================================================
-   ERROR STATE
-==================================================== */
-function showError(msg) {
-  const err = `<div class="state-msg error">⚠ FEED ERROR<br>${msg}</div>`;
-  document.getElementById("panel1").innerHTML = err;
-  document.getElementById("panel2").innerHTML = err;
-  document.getElementById("footerTime").textContent = "LAST SYNC: FAILED";
-}
-
-/* ====================================================
+/* ──────────────────────────────────────────
    INIT
-==================================================== */
+────────────────────────────────────────── */
 fetchNews();
 setInterval(fetchNews, POLL_MS);
 </script>
