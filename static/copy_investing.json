@@ -1,0 +1,182 @@
+[
+  {
+    "name": "Berkshire Hathaway",
+    "stocks": [
+      { "company": "Apple", "ticker": "AAPL" },
+      { "company": "Bank of America", "ticker": "BAC" },
+      { "company": "Coca Cola", "ticker": "KO" },
+      { "company": "American Express", "ticker": "AXP" }
+    ]
+  },
+  {
+    "name": "BlackRock",
+    "stocks": [
+      { "company": "Microsoft", "ticker": "MSFT" },
+      { "company": "Apple", "ticker": "AAPL" },
+      { "company": "Amazon", "ticker": "AMZN" },
+      { "company": "Nvidia", "ticker": "NVDA" }
+    ]
+  },
+  {
+    "name": "Vanguard Group",
+    "stocks": [
+      { "company": "Apple", "ticker": "AAPL" },
+      { "company": "Microsoft", "ticker": "MSFT" },
+      { "company": "Amazon", "ticker": "AMZN" },
+      { "company": "Tesla", "ticker": "TSLA" }
+    ]
+  },
+  {
+    "name": "State Street Global Advisors",
+    "stocks": [
+      { "company": "Apple", "ticker": "AAPL" },
+      { "company": "Microsoft", "ticker": "MSFT" },
+      { "company": "Amazon", "ticker": "AMZN" },
+      { "company": "Meta Platforms", "ticker": "META" }
+    ]
+  },
+  {
+    "name": "Bridgewater Associates",
+    "stocks": [
+      { "company": "Procter & Gamble", "ticker": "PG" },
+      { "company": "PepsiCo", "ticker": "PEP" },
+      { "company": "Coca Cola", "ticker": "KO" },
+      { "company": "Johnson & Johnson", "ticker": "JNJ" }
+    ]
+  },
+  {
+    "name": "Fidelity Investments",
+    "stocks": [
+      { "company": "Microsoft", "ticker": "MSFT" },
+      { "company": "Amazon", "ticker": "AMZN" },
+      { "company": "Alphabet", "ticker": "GOOGL" },
+      { "company": "Nvidia", "ticker": "NVDA" }
+    ]
+  },
+  {
+    "name": "Morgan Stanley Investment Management",
+    "stocks": [
+      { "company": "Microsoft", "ticker": "MSFT" },
+      { "company": "Apple", "ticker": "AAPL" },
+      { "company": "Nvidia", "ticker": "NVDA" },
+      { "company": "Amazon", "ticker": "AMZN" }
+    ]
+  },
+  {
+    "name": "JPMorgan Asset Management",
+    "stocks": [
+      { "company": "Apple", "ticker": "AAPL" },
+      { "company": "Microsoft", "ticker": "MSFT" },
+      { "company": "JPMorgan Chase", "ticker": "JPM" },
+      { "company": "Amazon", "ticker": "AMZN" }
+    ]
+  },
+  {
+    "name": "Goldman Sachs Asset Management",
+    "stocks": [
+      { "company": "Apple", "ticker": "AAPL" },
+      { "company": "Microsoft", "ticker": "MSFT" },
+      { "company": "Alphabet", "ticker": "GOOGL" },
+      { "company": "Nvidia", "ticker": "NVDA" }
+    ]
+  },
+  {
+    "name": "UBS Asset Management",
+    "stocks": [
+      { "company": "Apple", "ticker": "AAPL" },
+      { "company": "Microsoft", "ticker": "MSFT" },
+      { "company": "Tesla", "ticker": "TSLA" },
+      { "company": "Amazon", "ticker": "AMZN" }
+    ]
+  },
+  {
+    "name": "Northern Trust Asset Management",
+    "stocks": [
+      { "company": "Apple", "ticker": "AAPL" },
+      { "company": "Microsoft", "ticker": "MSFT" },
+      { "company": "Alphabet", "ticker": "GOOGL" },
+      { "company": "Amazon", "ticker": "AMZN" }
+    ]
+  },
+  {
+    "name": "T Rowe Price",
+    "stocks": [
+      { "company": "Microsoft", "ticker": "MSFT" },
+      { "company": "Amazon", "ticker": "AMZN" },
+      { "company": "Meta Platforms", "ticker": "META" },
+      { "company": "Nvidia", "ticker": "NVDA" }
+    ]
+  },
+  {
+    "name": "Invesco",
+    "stocks": [
+      { "company": "Apple", "ticker": "AAPL" },
+      { "company": "Microsoft", "ticker": "MSFT" },
+      { "company": "Alphabet", "ticker": "GOOGL" },
+      { "company": "Tesla", "ticker": "TSLA" }
+    ]
+  },
+  {
+    "name": "Franklin Templeton",
+    "stocks": [
+      { "company": "Microsoft", "ticker": "MSFT" },
+      { "company": "Amazon", "ticker": "AMZN" },
+      { "company": "Alphabet", "ticker": "GOOGL" },
+      { "company": "Nvidia", "ticker": "NVDA" }
+    ]
+  },
+  {
+    "name": "Geode Capital Management",
+    "stocks": [
+      { "company": "Apple", "ticker": "AAPL" },
+      { "company": "Microsoft", "ticker": "MSFT" },
+      { "company": "Amazon", "ticker": "AMZN" },
+      { "company": "Alphabet", "ticker": "GOOGL" }
+    ]
+  },
+  {
+    "name": "Citadel Advisors",
+    "stocks": [
+      { "company": "Apple", "ticker": "AAPL" },
+      { "company": "Tesla", "ticker": "TSLA" },
+      { "company": "Nvidia", "ticker": "NVDA" },
+      { "company": "Microsoft", "ticker": "MSFT" }
+    ]
+  },
+  {
+    "name": "Two Sigma Investments",
+    "stocks": [
+      { "company": "Apple", "ticker": "AAPL" },
+      { "company": "Microsoft", "ticker": "MSFT" },
+      { "company": "Amazon", "ticker": "AMZN" },
+      { "company": "Meta Platforms", "ticker": "META" }
+    ]
+  },
+  {
+    "name": "Renaissance Technologies",
+    "stocks": [
+      { "company": "Apple", "ticker": "AAPL" },
+      { "company": "Nvidia", "ticker": "NVDA" },
+      { "company": "Microsoft", "ticker": "MSFT" },
+      { "company": "Amazon", "ticker": "AMZN" }
+    ]
+  },
+  {
+    "name": "ARK Investment Management",
+    "stocks": [
+      { "company": "Tesla", "ticker": "TSLA" },
+      { "company": "Roku", "ticker": "ROKU" },
+      { "company": "Coinbase", "ticker": "COIN" },
+      { "company": "Zoom", "ticker": "ZM" }
+    ]
+  },
+  {
+    "name": "Baillie Gifford",
+    "stocks": [
+      { "company": "Tesla", "ticker": "TSLA" },
+      { "company": "Amazon", "ticker": "AMZN" },
+      { "company": "Shopify", "ticker": "SHOP" },
+      { "company": "Nvidia", "ticker": "NVDA" }
+    ]
+  }
+]

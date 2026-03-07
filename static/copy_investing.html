@@ -32,8 +32,6 @@ font-family:Segoe UI,Roboto,Arial,sans-serif;
 color:var(--text);
 }
 
-/* NAVBAR */
-
 .navbar{
 display:flex;
 justify-content:space-between;
@@ -65,8 +63,6 @@ transition:0.2s;
 color:var(--cyan);
 }
 
-/* PAGE HEADER */
-
 .header{
 padding:40px 20px;
 text-align:center;
@@ -81,15 +77,25 @@ margin-bottom:10px;
 color:var(--muted);
 }
 
-/* PORTFOLIO CONTAINER */
-
 .container{
 max-width:1200px;
 margin:auto;
 padding:20px;
 }
 
-/* PORTFOLIO CARD */
+.status-msg{
+text-align:center;
+padding:40px;
+color:var(--muted);
+font-size:15px;
+}
+
+.error-msg{
+text-align:center;
+padding:40px;
+color:#f87171;
+font-size:15px;
+}
 
 .portfolio-card{
 background:var(--panel);
@@ -110,8 +116,6 @@ font-size:20px;
 margin-bottom:15px;
 color:var(--cyan);
 }
-
-/* TABLE */
 
 table{
 width:100%;
@@ -138,8 +142,6 @@ tr:hover{
 background:#020617;
 }
 
-/* TICKER BADGE */
-
 .ticker{
 padding:4px 8px;
 border-radius:6px;
@@ -151,8 +153,6 @@ font-size:12px;
 .ticker.green{background:rgba(52,211,153,0.2);color:var(--green);}
 .ticker.purple{background:rgba(167,139,250,0.2);color:var(--purple);}
 .ticker.orange{background:rgba(251,146,60,0.2);color:var(--orange);}
-
-/* FOOTER */
 
 .footer{
 text-align:center;
@@ -166,130 +166,99 @@ font-size:12px;
 
 <body>
 
-<!-- NAVBAR -->
-
 <div class="navbar">
-<div class="logo">COPY INVEST</div>
-
-<div class="nav-links">
-<a href="index.html">Home</a>
-<a href="news.html">News</a>
-<a href="auth.html">Login / Sign Up</a>
-<a href="help.html">Help</a>
+  <div class="logo">COPY INVEST</div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="news.html">News</a>
+    <a href="auth.html">Login / Sign Up</a>
+    <a href="help.html">Help</a>
+  </div>
 </div>
-</div>
-
-<!-- HEADER -->
 
 <div class="header">
-<h1>Copy Investing Portfolios</h1>
-<p>Explore institutional portfolios and copy their investment strategies.</p>
+  <h1>Copy Investing Portfolios</h1>
+  <p>Explore institutional portfolios and copy their investment strategies.</p>
 </div>
 
-<div class="container" id="portfolioContainer"></div>
+<div class="container" id="portfolioContainer">
+  <div class="status-msg">Loading portfolios...</div>
+</div>
 
 <div class="footer">
-Copy Investing Platform • Data Powered by JSON
+  Copy Investing Platform • Data Powered by Firebase
 </div>
 
 <script>
 
-/* ==============================
-JSON DATA CONTROLS THE WEBSITE
-============================== */
-
-const portfolioData = {
-institutions:[
-
-{
-name:"Berkshire Hathaway",
-stocks:[
-{company:"Apple",ticker:"AAPL"},
-{company:"Bank of America",ticker:"BAC"},
-{company:"Coca Cola",ticker:"KO"},
-{company:"American Express",ticker:"AXP"}
-]
-},
-
-{
-name:"BlackRock",
-stocks:[
-{company:"Microsoft",ticker:"MSFT"},
-{company:"Nvidia",ticker:"NVDA"},
-{company:"Amazon",ticker:"AMZN"},
-{company:"Tesla",ticker:"TSLA"}
-]
-},
-
-{
-name:"Bridgewater Associates",
-stocks:[
-{company:"Procter & Gamble",ticker:"PG"},
-{company:"Johnson & Johnson",ticker:"JNJ"},
-{company:"PepsiCo",ticker:"PEP"},
-{company:"Visa",ticker:"V"}
-]
+async function fetchFirebaseJson(url) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+  return response.json();
 }
 
-]
-};
+function createPortfolios(data) {
 
-/* ==============================
-GENERATE TABLES DYNAMICALLY
-============================== */
+  const container = document.getElementById("portfolioContainer");
+  container.innerHTML = "";
 
-function createPortfolios(){
+  // Your Firebase root is a plain array — no .institutions wrapper needed
+  const institutions = Array.isArray(data) ? data : data.institutions;
 
-const container=document.getElementById("portfolioContainer");
+  if (!institutions || institutions.length === 0) {
+    container.innerHTML = '<div class="error-msg">No portfolio data found.</div>';
+    return;
+  }
 
-portfolioData.institutions.forEach((inst,index)=>{
+  institutions.forEach((inst) => {
 
-let card=document.createElement("div");
-card.className="portfolio-card";
+    const card = document.createElement("div");
+    card.className = "portfolio-card";
 
-let title=document.createElement("div");
-title.className="portfolio-title";
-title.innerText=inst.name;
+    const title = document.createElement("div");
+    title.className = "portfolio-title";
+    title.innerText = inst.name;
 
-let table=document.createElement("table");
+    const table = document.createElement("table");
 
-let thead=`
-<tr>
-<th>Company</th>
-<th>Ticker</th>
-</tr>
-`;
+    let html = `
+      <tr>
+        <th>Company</th>
+        <th>Ticker</th>
+      </tr>
+    `;
 
-let rows="";
+    inst.stocks.forEach((stock, i) => {
+      const colors = ["cyan", "green", "purple", "orange"];
+      const color = colors[i % colors.length];
+      html += `
+        <tr>
+          <td>${stock.company}</td>
+          <td><span class="ticker ${color}">${stock.ticker}</span></td>
+        </tr>
+      `;
+    });
 
-inst.stocks.forEach((stock,i)=>{
+    table.innerHTML = html;
+    card.appendChild(title);
+    card.appendChild(table);
+    container.appendChild(card);
 
-const colors=["cyan","green","purple","orange"];
-const color=colors[i%colors.length];
-
-rows+=`
-<tr>
-<td>${stock.company}</td>
-<td><span class="ticker ${color}">${stock.ticker}</span></td>
-</tr>
-`;
-
-});
-
-table.innerHTML=thead+rows;
-
-card.appendChild(title);
-card.appendChild(table);
-
-container.appendChild(card);
-
-});
+  });
 
 }
 
-/* INIT */
-
-createPortfolios();
+(async () => {
+  const container = document.getElementById("portfolioContainer");
+  try {
+    const url = "https://trading-agent-8dd25-default-rtdb.europe-west1.firebasedatabase.app/.json";
+    const data = await fetchFirebaseJson(url);
+    createPortfolios(data);
+  } catch (error) {
+    console.error("Firebase fetch error:", error);
+    container.innerHTML = `<div class="error-msg">Failed to load portfolios. Please try again later.<br><small>${error.message}</small></div>`;
+  }
+})();
 
 </script>
 
