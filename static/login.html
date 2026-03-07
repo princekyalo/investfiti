@@ -261,7 +261,16 @@ input, button {
         await signInWithEmailAndPassword(auth, email, password);
 
         showSuccess("Login successful! Redirecting…");
+       
+       
+       
+       
+        // Set cookies after successful login
+        setCookie("loggedIn", True, 7);
+        setCookie("lastLogin", new Date().toISOString(), 7);
 
+
+        
         // Redirect after short delay (update path as needed)
         setTimeout(() => { window.location.href = "index.html"; }, 1500);
 

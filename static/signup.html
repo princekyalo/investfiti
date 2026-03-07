@@ -186,6 +186,15 @@ input, button {
       return null;
     }
 
+    function setCookie(name, value, days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        const expires = "expires=" + date.toUTCString();
+        document.cookie = `${name}=${encodeURIComponent(value)}; ${expires}; path=/`;
+    }
+
+
+
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       clearMsgs();
@@ -216,10 +225,19 @@ input, button {
         });
 
         successBox.innerHTML = "Account created! Redirecting… Click <a href='index.html' style='color:#15803d;font-weight:600;'>here</a> if not redirected in 10 seconds.";
+       
+       
+       
+       
+       
+       
+       
+       
         // Set cookies after successful login
-        const today = new Date().toISOString().split("T")[0];
-        document.cookie = "loggedIn=true; path=/; max-age=2592000";
-        document.cookie = `lastLogin=${today}; path=/; max-age=2592000`;
+        setCookie("loggedIn", True, 7);
+        setCookie("lastLogin", new Date().toISOString(), 7);
+
+        
         successBox.classList.add("visible");
         errorBox.classList.remove("visible");
 
