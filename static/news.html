@@ -4,522 +4,969 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Market News Terminal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;500;600;700;800;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
 
 <style>
+/* =============================================
+   DESIGN SYSTEM — Wall Street Dark Terminal
+   Palette: Deep black + Amber gold + Cyan blue
+   + Blood red accents. Monospace data, condensed
+   display, clean body. Bloomberg meets DEFCON.
+============================================= */
+
 :root {
-  --bg: #f4f7fb;
-  --panel: #ffffff;
-  --border: #e3e8ef;
-  --text: #2d3748;
-  --muted: #6b7c93;
-  --green: #38d39f;
-  --cyan: #4cc9f0;
-  --amber: #ffb454;
-  --red: #f87171;
+  --black:     #050608;
+  --deep:      #080c10;
+  --panel:     #0b1017;
+  --panel2:    #0e141c;
+  --border:    #1a2535;
+  --border2:   #243040;
+  --glow:      #1e3a5f;
+
+  --amber:     #f0a500;
+  --amber-dim: #7a5200;
+  --amber-glow:rgba(240,165,0,0.12);
+
+  --cyan:      #00c8e8;
+  --cyan-dim:  #005f70;
+  --cyan-glow: rgba(0,200,232,0.10);
+
+  --green:     #00e676;
+  --green-dim: #004d28;
+  --red:       #ff3b3b;
+  --red-dim:   #5a0f0f;
+
+  --text:      #c8d8e8;
+  --text-dim:  #4a6070;
+  --text-mid:  #7a9ab0;
+
+  --mono: 'Share Tech Mono', monospace;
+  --cond: 'Barlow Condensed', sans-serif;
+  --body: 'Barlow', sans-serif;
 }
 
-* {
-  margin: 0;
-  padding: 0;
+*, *::before, *::after {
+  margin: 0; padding: 0;
   box-sizing: border-box;
 }
 
-body {
-  background: linear-gradient(135deg, #f6f9fc, #eef3f9);
-  color: var(--text);
-  font-family: Segoe UI, Roboto, Arial, sans-serif;
+html, body {
+  height: 100%;
   overflow: hidden;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
+  background: var(--black);
+  color: var(--text);
+  font-family: var(--body);
+  cursor: default;
 }
 
-/* HEADER */
-.header {
-  padding: 14px 24px;
-  font-weight: 700;
-  font-size: 18px;
-  letter-spacing: 1px;
-  color: var(--green);
-  background: var(--panel);
-  border-bottom: 1px solid var(--border);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+/* Scanline overlay */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.08) 2px,
+    rgba(0,0,0,0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Corner grain texture */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* =============================================
+   LAYOUT SHELL
+============================================= */
+.shell {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  height: 100vh;
+  position: relative;
+}
+
+/* =============================================
+   TOPBAR
+============================================= */
+.topbar {
+  display: flex;
+  align-items: stretch;
+  height: 52px;
+  background: var(--deep);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Amber top accent line */
+.topbar::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--amber), var(--cyan), var(--amber), transparent);
+  animation: shimmer-line 4s linear infinite;
+  background-size: 200% 100%;
+}
+
+@keyframes shimmer-line {
+  0%   { background-position: -100% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.topbar-brand {
+  display: flex;
   align-items: center;
+  gap: 12px;
+  padding: 0 24px;
+  border-right: 1px solid var(--border);
   flex-shrink: 0;
 }
 
-.header-status {
+.brand-icon {
+  width: 28px;
+  height: 28px;
+  position: relative;
+}
+
+.brand-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.brand-name {
+  font-family: var(--cond);
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: 3px;
+  color: var(--amber);
+  text-transform: uppercase;
+}
+
+.brand-sub {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.topbar-meta {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex: 1;
+  padding: 0 20px;
+}
+
+.meta-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 20px;
+  border-right: 1px solid var(--border);
+}
+
+.meta-cell:last-child { border-right: none; }
+
+.meta-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 1.5px;
+}
+
+.meta-value {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--cyan);
+  letter-spacing: 1px;
+}
+
+.meta-value.amber { color: var(--amber); }
+.meta-value.green { color: var(--green); }
+.meta-value.red   { color: var(--red); }
+
+.topbar-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 24px;
+  border-left: 1px solid var(--border);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--mono);
   font-size: 11px;
-  font-weight: 500;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  transition: background 0.4s, box-shadow 0.4s;
+}
+
+.status-dot.live {
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green), 0 0 16px rgba(0,230,118,0.3);
+  animation: dot-pulse 2s ease-in-out infinite;
+}
+
+.status-dot.error {
+  background: var(--red);
+  box-shadow: 0 0 8px var(--red);
+}
+
+@keyframes dot-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+
+/* =============================================
+   TICKER BAND
+============================================= */
+.ticker-band {
+  height: 36px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+/* Left fade mask */
+.ticker-band::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 80px;
+  background: linear-gradient(to right, var(--panel), transparent);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Right fade mask */
+.ticker-band::after {
+  content: "";
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 80px;
+  background: linear-gradient(to left, var(--panel), transparent);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.ticker-label {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--amber);
+  font-family: var(--cond);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--black);
+  z-index: 3;
+  flex-shrink: 0;
+}
+
+.ticker-scroll {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  padding-left: 100px;
+  animation: ticker-move 120s linear infinite;
+  will-change: transform;
+}
+
+.ticker-scroll:hover {
+  animation-play-state: paused;
+}
+
+@keyframes ticker-move {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.t-item {
+  font-family: var(--mono);
+  font-size: 12px;
   letter-spacing: 0.5px;
-  color: var(--muted);
+  padding-right: 60px;
+  opacity: 0.85;
+  transition: opacity 0.2s;
+}
+
+.t-item:hover { opacity: 1; }
+
+.t-item.gb      { color: var(--cyan); }
+.t-item.citizen { color: var(--green); }
+.t-item.ntv     { color: var(--amber); }
+
+.t-divider {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--border2);
+  padding-right: 60px;
+  flex-shrink: 0;
+}
+
+/* =============================================
+   SECTION HEADER BAR
+============================================= */
+.section-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--deep);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  height: 32px;
+}
+
+.section-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 20px;
+  height: 100%;
+  border-right: 1px solid var(--border);
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.section-tab.active {
+  color: var(--amber);
+  border-bottom: 2px solid var(--amber);
+  margin-bottom: -1px;
+  background: var(--amber-glow);
+}
+
+.section-tab .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.section-time {
+  margin-left: auto;
+  padding: 0 20px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+/* =============================================
+   MAIN GRID
+============================================= */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.grid-divider {
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+/* =============================================
+   NEWS PANEL
+============================================= */
+.news-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+  background: var(--panel);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel2);
+  flex-shrink: 0;
+}
+
+.panel-title {
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 2.5px;
+  color: var(--amber);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-title::before {
+  content: "";
+  display: block;
+  width: 3px;
+  height: 14px;
+  background: var(--amber);
+  border-radius: 2px;
+}
+
+.panel-count {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  background: var(--border);
+  padding: 2px 8px;
+  border-radius: 3px;
+  letter-spacing: 1px;
+}
+
+/* Scroll wrapper with fade */
+.scroll-wrapper {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  min-height: 0;
+}
+
+.scroll-wrapper::before,
+.scroll-wrapper::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  height: 40px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.scroll-wrapper::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--panel), transparent);
+}
+
+.scroll-wrapper::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--panel), transparent);
+}
+
+.news-list {
+  padding: 6px 0;
+  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.news-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 11px 20px;
+  border-bottom: 1px solid rgba(26,37,53,0.6);
+  transition: background 0.2s;
+  position: relative;
+  cursor: default;
+}
+
+.news-item::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 0;
+  background: var(--amber-glow);
+  transition: width 0.3s;
+}
+
+.news-item:hover::before { width: 100%; }
+
+.news-item:last-child { border-bottom: none; }
+
+.item-index {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  width: 22px;
+  flex-shrink: 0;
+  text-align: right;
+  padding-top: 1px;
+}
+
+.item-source {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+.item-source.gb {
+  background: var(--cyan-glow);
+  color: var(--cyan);
+  border: 1px solid var(--cyan-dim);
+}
+
+.item-source.citizen {
+  background: var(--green-dim);
+  color: var(--green);
+  border: 1px solid #004d2880;
+}
+
+.item-source.ntv {
+  background: var(--amber-glow);
+  color: var(--amber);
+  border: 1px solid var(--amber-dim);
+}
+
+.item-text {
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text);
+  position: relative;
+  z-index: 1;
+  flex: 1;
+}
+
+.news-item:hover .item-text { color: #e8f4ff; }
+
+/* =============================================
+   BOTTOM BAR
+============================================= */
+.bottom-bar {
+  display: flex;
+  align-items: center;
+  height: 28px;
+  background: var(--deep);
+  border-top: 1px solid var(--border);
+  padding: 0 20px;
+  gap: 20px;
+  flex-shrink: 0;
+}
+
+.bottom-bar::before {
+  content: "";
+  position: absolute;
+  bottom: 28px; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border2), transparent);
+}
+
+.bar-item {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--muted);
-  transition: background 0.3s;
-}
-
-.status-dot.live {
-  background: var(--green);
-  animation: pulse 2s infinite;
-}
-
-.status-dot.error {
-  background: var(--red);
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
-/* TICKER */
-.ticker-wrap {
-  height: 40px;
-  background: #ffffff;
-  border-bottom: 1px solid var(--border);
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.ticker {
-  white-space: nowrap;
-  display: inline-block;
-  animation: scroll 90s linear infinite;
-}
-
-.ticker:hover {
-  animation-play-state: paused;
-}
-
-.ticker-item {
-  display: inline-block;
-  margin-right: 60px;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.ticker-separator {
-  display: inline-block;
-  margin-right: 60px;
-  color: var(--border);
-  font-size: 16px;
-}
-
-@keyframes scroll {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-
-/* MAIN LAYOUT */
-.main {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  padding: 16px;
-  flex: 1;
-  overflow: hidden;
-}
-
-/* PANELS */
-.panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 16px 18px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-  display: flex;
-  flex-direction: column;
-}
-
-.panel-title {
-  font-size: 11px;
-  color: var(--muted);
-  margin-bottom: 10px;
-  letter-spacing: 1.5px;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.news-list-wrapper {
-  flex: 1;
-  overflow: hidden;
-  position: relative;
-}
-
-/* Fade top/bottom edges */
-.news-list-wrapper::before,
-.news-list-wrapper::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 30px;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.news-list-wrapper::before {
-  top: 0;
-  background: linear-gradient(to bottom, #ffffff, transparent);
-}
-
-.news-list-wrapper::after {
-  bottom: 0;
-  background: linear-gradient(to top, #ffffff, transparent);
-}
-
-.news-list {
-  position: relative;
-  transition: transform 0.7s cubic-bezier(0.25, 0.1, 0.25, 1);
-}
-
-.news-item {
-  padding: 11px 0;
-  border-bottom: 1px solid var(--border);
-  font-size: 13.5px;
-  line-height: 1.45;
-  cursor: default;
-  transition: color 0.2s;
-}
-
-.news-item:last-child {
-  border-bottom: none;
-}
-
-.news-item:hover {
+.bar-item .bar-val {
   color: var(--cyan);
 }
 
-.source-tag {
+.bar-item .bar-val.amber { color: var(--amber); }
+
+.bar-sep {
+  width: 1px;
+  height: 12px;
+  background: var(--border);
+}
+
+#footerTime {
+  margin-left: auto;
+  font-family: var(--mono);
   font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.8px;
-  opacity: 0.7;
-  margin-right: 6px;
-  vertical-align: middle;
+  color: var(--text-dim);
+  letter-spacing: 1px;
 }
 
-/* SOURCE COLOUR CLASSES */
-.gb     { color: var(--cyan); }
-.citizen { color: var(--green); }
-.ntv    { color: var(--amber); }
-
-/* LOADING / ERROR STATES */
+/* =============================================
+   STATE MESSAGES
+============================================= */
 .state-msg {
-  text-align: center;
   padding: 40px 20px;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.state-msg.error {
-  color: var(--red);
-}
-
-/* FOOTER */
-.footer {
-  padding: 9px 20px;
-  font-size: 11px;
-  color: var(--muted);
-  border-top: 1px solid var(--border);
-  background: #ffffff;
   text-align: center;
-  flex-shrink: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  line-height: 2;
+}
+
+.state-msg.error { color: var(--red); }
+
+/* =============================================
+   ENTRANCE ANIMATION
+============================================= */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.news-item {
+  animation: fade-in-up 0.4s ease both;
 }
 </style>
 </head>
-
 <body>
 
-<!-- HEADER -->
-<div class="header">
-  MARKET NEWS TERMINAL
-  <div class="header-status">
-    <div class="status-dot" id="statusDot"></div>
-    <span id="statusText">CONNECTING...</span>
-  </div>
-</div>
+<div class="shell">
 
-<!-- TICKER -->
-<div class="ticker-wrap">
-  <div class="ticker" id="ticker">
-    <span class="ticker-item" style="color:var(--muted)">Loading headlines...</span>
-  </div>
-</div>
+  <!-- ═══ TOPBAR ═══ -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      <!-- Chart icon -->
+      <div class="brand-icon">
+        <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="2,22 8,14 13,18 19,8 26,12" stroke="#f0a500" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="26" cy="12" r="2.5" fill="#00c8e8"/>
+          <line x1="2" y1="24" x2="26" y2="24" stroke="#1a2535" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">InvestFiti</div>
+        <div class="brand-sub">MARKET NEWS TERMINAL</div>
+      </div>
+    </div>
 
-<!-- PANELS -->
-<div class="main">
-  <div class="panel">
-    <div class="panel-title">GLOBAL MARKETS</div>
-    <div class="news-list-wrapper">
-      <div class="news-list" id="panel1">
-        <div class="state-msg">Loading...</div>
+    <div class="topbar-meta">
+      <div class="meta-cell">
+        <div class="meta-label">EXCHANGE</div>
+        <div class="meta-value amber">NSE · LSE · NYSE</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-label">FEED</div>
+        <div class="meta-value" id="feedCount">— SOURCES</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-label">HEADLINES</div>
+        <div class="meta-value green" id="headlineCount">—</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-label">SESSION</div>
+        <div class="meta-value" id="sessionTime">--:--:--</div>
+      </div>
+    </div>
+
+    <div class="topbar-status">
+      <div class="status-indicator">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">CONNECTING</span>
       </div>
     </div>
   </div>
-  <div class="panel">
-    <div class="panel-title">BUSINESS &amp; ECONOMY</div>
-    <div class="news-list-wrapper">
-      <div class="news-list" id="panel2">
-        <div class="state-msg">Loading...</div>
-      </div>
+
+  <!-- ═══ TICKER BAND ═══ -->
+  <div class="ticker-band">
+    <div class="ticker-label">LIVE FEED</div>
+    <div class="ticker-scroll" id="tickerScroll">
+      <span class="t-item" style="color:var(--text-dim)">Awaiting feed data...</span>
     </div>
   </div>
-</div>
 
-<!-- FOOTER -->
-<div class="footer" id="footer">SYNCING...</div>
+  <!-- ═══ SECTION BAR ═══ -->
+  <div class="section-bar">
+    <div class="section-tab active"><span class="dot"></span>ALL MARKETS</div>
+    <div class="section-tab"><span class="dot"></span>EQUITIES</div>
+    <div class="section-tab"><span class="dot"></span>MACRO</div>
+    <div class="section-tab"><span class="dot"></span>COMMODITIES</div>
+    <div class="section-time" id="liveDate">—</div>
+  </div>
+
+  <!-- ═══ MAIN GRID ═══ -->
+  <div class="main-grid">
+
+    <div class="news-panel">
+      <div class="panel-header">
+        <div class="panel-title">Global Markets</div>
+        <div class="panel-count" id="count1">0 ITEMS</div>
+      </div>
+      <div class="scroll-wrapper">
+        <div class="news-list" id="panel1">
+          <div class="state-msg">Initialising feed...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-divider"></div>
+
+    <div class="news-panel">
+      <div class="panel-header">
+        <div class="panel-title">Business &amp; Economy</div>
+        <div class="panel-count" id="count2">0 ITEMS</div>
+      </div>
+      <div class="scroll-wrapper">
+        <div class="news-list" id="panel2">
+          <div class="state-msg">Initialising feed...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══ BOTTOM BAR ═══ -->
+  <div class="bottom-bar">
+    <div class="bar-item">SOURCE <span class="bar-val amber" id="barSources">—</span></div>
+    <div class="bar-sep"></div>
+    <div class="bar-item">TOTAL ITEMS <span class="bar-val" id="barItems">—</span></div>
+    <div class="bar-sep"></div>
+    <div class="bar-item">POLL INTERVAL <span class="bar-val">120s</span></div>
+    <div class="bar-sep"></div>
+    <div class="bar-item">DB <span class="bar-val amber">FIREBASE EU-WEST-1</span></div>
+    <div id="footerTime">LAST SYNC: —</div>
+  </div>
+
+</div><!-- /shell -->
 
 
 <script>
-
-/* ============================================================
+/* ====================================================
    CONFIG
-============================================================ */
-const FIREBASE_URL = "https://investfiti-news-6c79c-default-rtdb.europe-west1.firebasedatabase.app/.json";
-const POLL_INTERVAL_MS  = 120000;  // re-fetch every 2 minutes
-const SCROLL_INTERVAL_MS = 3500;   // scroll every 3.5 seconds
-const SCROLL_PX = 48;              // pixels per scroll step
+==================================================== */
+const FIREBASE_URL    = "https://investfiti-news-6c79c-default-rtdb.europe-west1.firebasedatabase.app/.json";
+const POLL_MS         = 120000;
+const SCROLL_MS       = 3800;
+const SCROLL_PX       = 52;
 
-let scrollOffset1 = 0;
-let scrollOffset2 = 0;
-let scrollTimer   = null;
+let scroll1 = 0, scroll2 = 0, scrollTimer = null;
 
-/* ============================================================
+/* ====================================================
    LOGIN COOKIE GUARD
-============================================================ */
-(function store_login_cookies() {
-  const COOKIE_NAME    = "lastLogin";
-  const SEVEN_DAYS_MS  = 7 * 24 * 60 * 60 * 1000;
-
-  function getCookie(name) {
-    for (const cookie of document.cookie.split("; ")) {
-      const [k, v] = cookie.split("=");
-      if (k === name) return decodeURIComponent(v);
+==================================================== */
+(function() {
+  const NAME = "lastLogin", WEEK = 7*24*60*60*1000;
+  function get(n) {
+    for (const c of document.cookie.split("; ")) {
+      const [k,v] = c.split("=");
+      if (k===n) return decodeURIComponent(v);
     }
     return null;
   }
-
-  function setCookie(name, value, days) {
-    const exp = new Date(Date.now() + days * 86400000).toUTCString();
-    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${exp}; path=/`;
+  function set(n,v,d) {
+    const e = new Date(Date.now()+d*86400000).toUTCString();
+    document.cookie = `${n}=${encodeURIComponent(v)}; expires=${e}; path=/`;
   }
-
-  const existing = getCookie(COOKIE_NAME);
-  if (existing && (Date.now() - new Date(existing).getTime() > SEVEN_DAYS_MS)) {
-    window.location.href = "auth.html";
-    return;
-  }
-  setCookie(COOKIE_NAME, new Date().toISOString(), 7);
+  const ex = get(NAME);
+  if (ex && Date.now()-new Date(ex).getTime() > WEEK) { window.location.href="auth.html"; return; }
+  set(NAME, new Date().toISOString(), 7);
 })();
 
-/* ============================================================
-   STATUS INDICATOR
-============================================================ */
+/* ====================================================
+   LIVE CLOCK
+==================================================== */
+function updateClock() {
+  const now = new Date();
+  const t   = now.toLocaleTimeString("en-GB", { hour12: false });
+  const d   = now.toLocaleDateString("en-GB", { weekday:"short", day:"2-digit", month:"short", year:"numeric" });
+  const el  = document.getElementById("sessionTime");
+  const dl  = document.getElementById("liveDate");
+  if (el) el.textContent = t;
+  if (dl) dl.textContent = d.toUpperCase();
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+/* ====================================================
+   STATUS
+==================================================== */
 function setStatus(state, text) {
-  const dot  = document.getElementById("statusDot");
-  const span = document.getElementById("statusText");
-  dot.className  = "status-dot " + state;   // "live" | "error" | ""
-  span.textContent = text;
+  document.getElementById("statusDot").className  = "status-dot " + state;
+  document.getElementById("statusText").textContent = text;
 }
 
-/* ============================================================
+/* ====================================================
    FETCH
-============================================================ */
+==================================================== */
 async function fetchNews() {
-  setStatus("", "SYNCING...");
+  setStatus("", "SYNCING");
   try {
-    const res = await fetch(FIREBASE_URL);
+    const res  = await fetch(FIREBASE_URL);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-    const data = await res.json();
-
-    // ── Normalise: Firebase may return an object OR an array ──
-    // Our JSON is an object: { generated_at, sources: [...] }
-    // But Firebase sometimes wraps arrays as objects with numeric keys.
-    const normalised = normaliseFirebaseData(data);
-
-    renderUI(normalised);
+    const raw  = await res.json();
+    const data = normalise(raw);
+    render(data);
     setStatus("live", "LIVE");
-
-  } catch (err) {
-    console.error("[ERROR]", err);
-    setStatus("error", "CONNECTION FAILED");
-    showError(err.message);
+  } catch(e) {
+    console.error(e);
+    setStatus("error", "NO SIGNAL");
+    showError(e.message);
   }
 }
 
-/* ============================================================
-   NORMALISE
-   Handles three possible Firebase return shapes:
-   1. { generated_at, sources: [...] }          ← our exact format
-   2. { generated_at, sources: { 0:{}, 1:{} } } ← Firebase object-ified array
-   3. Array at root                              ← bare sources array
-============================================================ */
-function normaliseFirebaseData(raw) {
-  // Shape 3 — bare array at root
-  if (Array.isArray(raw)) {
-    return { generated_at: null, sources: raw };
-  }
-
-  // Shape 1 & 2 — object with sources key
+/* ====================================================
+   NORMALISE — handles object/array Firebase shapes
+==================================================== */
+function normalise(raw) {
+  if (Array.isArray(raw)) return { generated_at: null, sources: raw };
   if (raw && raw.sources) {
-    let sources = raw.sources;
-    // Firebase may convert arrays to objects with numeric string keys
-    if (!Array.isArray(sources) && typeof sources === "object") {
-      sources = Object.values(sources);
-    }
-    // Normalise articles inside each source too
-    sources = sources.map(src => {
-      let articles = src.articles;
-      if (!Array.isArray(articles) && typeof articles === "object") {
-        articles = Object.values(articles);
-      }
-      return { ...src, articles: articles || [] };
+    let s = raw.sources;
+    if (!Array.isArray(s)) s = Object.values(s);
+    s = s.map(src => {
+      let a = src.articles;
+      if (a && !Array.isArray(a)) a = Object.values(a);
+      return { ...src, articles: a||[] };
     });
-    return { generated_at: raw.generated_at || null, sources };
+    return { generated_at: raw.generated_at||null, sources: s };
   }
-
-  // Fallback
   return { generated_at: null, sources: [] };
 }
 
-/* ============================================================
-   CSS CLASS FROM SOURCE NAME
-============================================================ */
-function sourceClass(name) {
-  if (!name) return "";
+/* ====================================================
+   SOURCE CSS CLASS
+==================================================== */
+function cls(name="") {
   const n = name.toLowerCase();
-  if (n.includes("gb"))      return "gb";
-  if (n.includes("citizen")) return "citizen";
-  if (n.includes("ntv"))     return "ntv";
-  return "";
+  if (n.includes("gb"))       return "gb";
+  if (n.includes("citizen"))  return "citizen";
+  if (n.includes("ntv"))      return "ntv";
+  return "gb";
 }
 
-/* ============================================================
+/* ====================================================
    RENDER
-============================================================ */
-function renderUI({ generated_at, sources }) {
-  const ticker = document.getElementById("ticker");
-  const panel1 = document.getElementById("panel1");
-  const panel2 = document.getElementById("panel2");
-  const footer = document.getElementById("footer");
+==================================================== */
+function render({ generated_at, sources }) {
+  const p1 = document.getElementById("panel1");
+  const p2 = document.getElementById("panel2");
 
-  if (!sources || sources.length === 0) {
-    showError("No sources found in database.");
-    return;
-  }
+  if (!sources || !sources.length) { showError("No sources in database."); return; }
 
-  // Collect all unique headlines with their CSS class
-  const seen = new Set();
-  const headlines = [];
-
+  /* Collect unique headlines */
+  const seen = new Set(), all = [];
   sources.forEach(src => {
-    const cls = sourceClass(src.source);
-    (src.articles || []).forEach(title => {
-      if (title && !seen.has(title)) {
-        seen.add(title);
-        headlines.push({ text: title, cls, source: src.source });
-      }
+    const c = cls(src.source);
+    const short = (src.source||"").split(" ")[0].toUpperCase();
+    (src.articles||[]).forEach(t => {
+      if (t && !seen.has(t)) { seen.add(t); all.push({ text:t, cls:c, short }); }
     });
   });
 
-  if (headlines.length === 0) {
-    showError("No headlines available right now.");
-    return;
+  if (!all.length) { showError("No headlines available."); return; }
+
+  /* Update header counts */
+  document.getElementById("feedCount").textContent    = sources.length + " SOURCES";
+  document.getElementById("headlineCount").textContent = all.length + " ITEMS";
+  document.getElementById("barSources").textContent   = sources.length;
+  document.getElementById("barItems").textContent     = all.length;
+
+  /* Ticker — duplicate for seamless loop */
+  const tickHTML = all.map(h =>
+    `<span class="t-item ${h.cls}">${h.text}</span><span class="t-divider">◆</span>`
+  ).join("");
+  document.getElementById("tickerScroll").innerHTML = tickHTML + tickHTML;
+
+  /* Panels split */
+  const mid = Math.ceil(all.length / 2);
+
+  function buildPanel(items) {
+    return items.map((h, i) => `
+      <div class="news-item" style="animation-delay:${i*30}ms">
+        <div class="item-index">${String(i+1).padStart(2,"0")}</div>
+        <div class="item-source ${h.cls}">${h.short}</div>
+        <div class="item-text">${h.text}</div>
+      </div>`).join("");
   }
 
-  // ── TICKER (duplicate for seamless loop) ──
-  const tickerHTML = headlines
-    .map(h => `<span class="ticker-item ${h.cls}">${h.text}</span><span class="ticker-separator">|</span>`)
-    .join("");
-  ticker.innerHTML = tickerHTML + tickerHTML;
+  p1.innerHTML = buildPanel(all.slice(0, mid));
+  p2.innerHTML = buildPanel(all.slice(mid));
 
-  // ── PANELS (split 50/50) ──
-  const mid = Math.ceil(headlines.length / 2);
+  document.getElementById("count1").textContent = mid + " ITEMS";
+  document.getElementById("count2").textContent = (all.length - mid) + " ITEMS";
 
-  panel1.innerHTML = headlines.slice(0, mid)
-    .map(h => `<div class="news-item ${h.cls}"><span class="source-tag">${h.source.split(" ")[0].toUpperCase()}</span>${h.text}</div>`)
-    .join("");
+  /* Footer time */
+  const syncTime = generated_at ? new Date(generated_at) : new Date();
+  document.getElementById("footerTime").textContent =
+    "LAST SYNC: " + syncTime.toLocaleString("en-GB", { hour12:false }).toUpperCase();
 
-  panel2.innerHTML = headlines.slice(mid)
-    .map(h => `<div class="news-item ${h.cls}"><span class="source-tag">${h.source.split(" ")[0].toUpperCase()}</span>${h.text}</div>`)
-    .join("");
-
-  // ── FOOTER ──
-  footer.textContent = generated_at
-    ? "Last Updated: " + new Date(generated_at).toLocaleString()
-    : "Last Updated: " + new Date().toLocaleString();
-
-  // ── RESET SCROLL ──
   resetScroll();
 }
 
-/* ============================================================
+/* ====================================================
    AUTO-SCROLL
-============================================================ */
+==================================================== */
 function resetScroll() {
-  scrollOffset1 = 0;
-  scrollOffset2 = 0;
+  scroll1 = 0; scroll2 = 0;
   applyScroll();
-
   if (scrollTimer) clearInterval(scrollTimer);
-  scrollTimer = setInterval(tick, SCROLL_INTERVAL_MS);
+  scrollTimer = setInterval(tick, SCROLL_MS);
 }
 
 function tick() {
   const p1 = document.getElementById("panel1");
   const p2 = document.getElementById("panel2");
   if (!p1 || !p2) return;
-
-  const maxScroll1 = Math.max(0, p1.scrollHeight - p1.parentElement.clientHeight + 30);
-  const maxScroll2 = Math.max(0, p2.scrollHeight - p2.parentElement.clientHeight + 30);
-
-  scrollOffset1 = scrollOffset1 >= maxScroll1 ? 0 : scrollOffset1 + SCROLL_PX;
-  scrollOffset2 = scrollOffset2 >= maxScroll2 ? 0 : scrollOffset2 + SCROLL_PX;
-
+  const max1 = Math.max(0, p1.scrollHeight - p1.parentElement.clientHeight + 40);
+  const max2 = Math.max(0, p2.scrollHeight - p2.parentElement.clientHeight + 40);
+  scroll1 = scroll1 >= max1 ? 0 : scroll1 + SCROLL_PX;
+  scroll2 = scroll2 >= max2 ? 0 : scroll2 + SCROLL_PX;
   applyScroll();
 }
 
 function applyScroll() {
   const p1 = document.getElementById("panel1");
   const p2 = document.getElementById("panel2");
-  if (p1) p1.style.transform = `translateY(-${scrollOffset1}px)`;
-  if (p2) p2.style.transform = `translateY(-${scrollOffset2}px)`;
+  if (p1) p1.style.transform = `translateY(-${scroll1}px)`;
+  if (p2) p2.style.transform = `translateY(-${scroll2}px)`;
 }
 
-/* ============================================================
+/* ====================================================
    ERROR STATE
-============================================================ */
+==================================================== */
 function showError(msg) {
-  const p1 = document.getElementById("panel1");
-  const p2 = document.getElementById("panel2");
-  const err = `<div class="state-msg error">⚠ ${msg}</div>`;
-  if (p1) p1.innerHTML = err;
-  if (p2) p2.innerHTML = err;
-  document.getElementById("footer").textContent = "Failed to load data.";
+  const err = `<div class="state-msg error">⚠ FEED ERROR<br>${msg}</div>`;
+  document.getElementById("panel1").innerHTML = err;
+  document.getElementById("panel2").innerHTML = err;
+  document.getElementById("footerTime").textContent = "LAST SYNC: FAILED";
 }
 
-/* ============================================================
-   INIT + POLLING
-============================================================ */
+/* ====================================================
+   INIT
+==================================================== */
 fetchNews();
-setInterval(fetchNews, POLL_INTERVAL_MS);
-
+setInterval(fetchNews, POLL_MS);
 </script>
 </body>
 </html>
